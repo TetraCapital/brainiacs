@@ -187,6 +187,41 @@ a{color:var(--gold);text-decoration:none}a:hover{color:var(--goldl)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .section-title{font-family:var(--fm);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:22px}
 @media(max-width:600px){.navbar{padding:0 16px;gap:10px}.nav-link{padding:6px 8px;font-size:10px}.navbar__player:active{transform:translateY(0)}}
+
+/* ── MOBILE HAMBURGER NAV ─────────────────────────────────── */
+.nav-menu-btn{display:none;background:transparent;border:none;cursor:pointer;padding:6px 4px;flex-direction:column;gap:5px;align-items:center;justify-content:center;flex-shrink:0}
+.nav-menu-btn span{display:block;width:20px;height:2px;background:var(--fg2);border-radius:1px;transition:background .15s}
+.nav-menu-btn:hover span{background:var(--fg)}
+.nav-drawer{position:fixed;inset:0;z-index:400;display:none}
+.nav-drawer.open{display:block}
+.nav-drawer__bd{position:absolute;inset:0;background:rgba(0,0,0,.72)}
+.nav-drawer__panel{position:absolute;top:0;right:0;bottom:0;width:240px;background:var(--s1);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;gap:4px;overflow-y:auto}
+.nav-drawer__close{align-self:flex-end;background:transparent;border:none;color:var(--fg3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;margin-bottom:4px}
+.nav-drawer__close:hover{color:var(--fg)}
+.nav-dlink{font-family:var(--fm);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg2);padding:11px 14px;border-radius:var(--r);display:block;text-decoration:none!important;transition:color .15s,background .15s;background:transparent;border:none;cursor:pointer;text-align:left;width:100%}
+.nav-dlink:hover,.nav-dlink:focus{color:var(--fg);background:var(--s2)}
+.nav-dlink.active{color:var(--gold)}
+.nav-dlink.clr-orange{color:#f97316;font-weight:700}
+.nav-dlink.clr-yellow{color:#f5d800;font-weight:700}
+.nav-dlink.clr-white{color:#fff;font-weight:700}
+.nav-drawer__sep{height:1px;background:var(--border);margin:6px 0}
+@media(max-width:640px){
+  .nav-menu-btn{display:flex}
+  .navbar__links{display:none}
+  .navbar__right{display:none}
+  .ad-banner{display:none}
+}
+
+/* ── GAME PAGE VIEWPORT FIT ─────────────────────────────────── */
+body.game-page{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+body.game-page .game-main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+@media(max-width:640px){
+  body.game-page .gh{padding:10px 16px 8px}
+  body.game-page .gt{font-size:22px}
+  body.game-page .gs{font-size:10px;margin-top:2px}
+  body.game-page .gm{font-size:10px;margin-top:2px}
+  body.game-page .game-main{padding:12px 16px 16px}
+}
 </style>`;
 
 
@@ -749,7 +784,38 @@ function NAV(active, extra) {
     <button class="navbar__player" id="playerBtn"><span id="playerName" data-i18n="nav.setname">Set Name</span></button>
     ${extra||''}
   </div>
+  <!-- Hamburger (mobile only) -->
+  <button class="nav-menu-btn" id="navMenuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
+<!-- Mobile nav drawer -->
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer__bd" id="navDrawerBd"></div>
+  <div class="nav-drawer__panel">
+    <button class="nav-drawer__close" id="navDrawerClose">×</button>
+    <a href="/" class="nav-dlink${active==='home'?' active':''}">🎮 Games</a>
+    <a href="/rankings" class="nav-dlink${active==='rankings'?' active':''}">🏆 Rankings</a>
+    <a href="/badges" class="nav-dlink${active==='badges'?' active':''}">🏅 Badges</a>
+    <div class="nav-drawer__sep"></div>
+    <button class="nav-dlink clr-yellow" onclick="closeMobileNav();openLangModal()">🌍 Language</button>
+    <button class="nav-dlink clr-white" onclick="closeMobileNav();openInviteModal()">👥 Add a Friend</button>
+    <button class="nav-dlink clr-orange" id="drawerPlayerBtn"></button>
+  </div>
+</div>
+<script>(function(){
+  var btn=document.getElementById('navMenuBtn');
+  var drawer=document.getElementById('navDrawer');
+  var bd=document.getElementById('navDrawerBd');
+  var closeBtn=document.getElementById('navDrawerClose');
+  var drawerPlayerBtn=document.getElementById('drawerPlayerBtn');
+  window.closeMobileNav=function(){drawer.classList.remove('open');};
+  if(btn)btn.addEventListener('click',function(){drawer.classList.add('open');});
+  if(bd)bd.addEventListener('click',window.closeMobileNav);
+  if(closeBtn)closeBtn.addEventListener('click',window.closeMobileNav);
+  // Sync player name in drawer
+  function syncDrawerName(){var n=localStorage.getItem('bn_player');try{n=JSON.parse(n).name;}catch(e){}if(drawerPlayerBtn)drawerPlayerBtn.textContent='👤 '+(n||'Set Name');}
+  syncDrawerName();
+  if(drawerPlayerBtn)drawerPlayerBtn.addEventListener('click',function(){closeMobileNav();var pb=document.getElementById('playerBtn');if(pb)pb.click();});
+})();</script>
 <script>
 (function(){
   var l=localStorage.getItem('bn_lang')||'en';
@@ -1307,7 +1373,7 @@ hr.hd{border:none;border-top:1px solid var(--border);margin:18px 0}
 @media(max-width:360px){.tile{width:44px;height:44px;font-size:18px}.key{height:46px;min-width:30px;font-size:12px}}
 @media(hover:none) and (pointer:coarse){#kb{display:none}}
 </style>
-</head><body>
+</head><body class="game-page">
 ${AD_TOP}${NAV('wordle','<button class="navbar__help" id="helpBtn">?</button>')}
 <div class="gh">
   <h1 class="gt">Wordle</h1>
@@ -1460,7 +1526,7 @@ function pathlePage() {
 .p-sv{font-family:var(--fm);font-size:24px;font-weight:500}
 .p-sl{font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)}
 </style>
-</head><body>
+</head><body class="game-page">
 ${AD_TOP}${NAV('pathle')}
 <div class="gh">
   <h1 class="gt">Pathle</h1>
@@ -1868,7 +1934,7 @@ function fastspellPage() {
 .btn-secondary:hover{border-color:var(--fg);color:var(--fg)}
 .fs-game-area{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%}
 </style>
-</head><body>
+</head><body class="game-page">
 ${AD_TOP}${NAV('fastspell')}
 <div class="gh">
   <h1 class="gt">FastSpell</h1>
@@ -2138,7 +2204,7 @@ function blindlePage() {
 .help-text{font-family:var(--fm);font-size:12px;color:var(--fg2);line-height:1.5}
 .help-text b{color:var(--fg)}
 </style>
-</head><body>
+</head><body class="game-page">
 ${AD_TOP}${NAV('blindle','<button class="navbar__help" id="helpBtn">?</button>')}
 <div class="gh">
   <h1 class="gt">Blindle</h1>
