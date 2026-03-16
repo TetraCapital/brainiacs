@@ -1094,15 +1094,11 @@ ${AD_TOP}${NAV('rankings')}
     <button class="tab" data-game="pathle">🔗 Pathle</button>
     <button class="tab" data-game="fastspell">💡 FastSpell</button>
     <button class="tab" data-game="blindle">🔮 Blindle</button>
-    <button class="tab" data-game="badges">🏅 Badges</button>
   </div>
   <div class="table-wrap"><table>
     <thead><tr><th>#</th><th><span data-i18n="rankings.player">Player</span></th><th><span data-i18n="rankings.played">Played</span></th><th><span data-i18n="rankings.winrate">Win %</span></th><th><span data-i18n="wordle.avgguesses">Avg Guesses</span></th><th><span data-i18n="wordle.maxstreak">Max Streak</span></th></tr></thead>
     <tbody id="tbody"><tr><td colspan="6" class="empty">No players yet — play a game first!</td></tr></tbody>
   </table></div>
-  <div id="badgesPanel" style="display:none">
-    <div id="badgesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:8px 0"></div>
-  </div>
   <p class="note">Rankings are stored in your browser. In production these would sync to a shared server.</p>
 </main>
 ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
@@ -1235,15 +1231,7 @@ document.querySelectorAll('.tab').forEach(function(t){
   t.addEventListener('click', function(){
     document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
     t.classList.add('active');
-    if(t.dataset.game==='badges'){
-      document.querySelector('.table-wrap').style.display='none';
-      document.getElementById('badgesPanel').style.display='';
-      renderBadges();
-    } else {
-      document.querySelector('.table-wrap').style.display='';
-      document.getElementById('badgesPanel').style.display='none';
-      renderRankings(t.dataset.game);
-    }
+    renderRankings(t.dataset.game);
   });
 });
 document.addEventListener('DOMContentLoaded', function(){ renderRankings('wordle'); });
@@ -1317,6 +1305,7 @@ hr.hd{border:none;border-top:1px solid var(--border);margin:18px 0}
 .htile.a{background:var(--absent);border-color:#252525;color:var(--absentt)}
 @media(max-width:480px){.tile{width:52px;height:52px;font-size:22px}.key{height:50px}}
 @media(max-width:360px){.tile{width:44px;height:44px;font-size:18px}.key{height:46px;min-width:30px;font-size:12px}}
+@media(hover:none) and (pointer:coarse){#kb{display:none}}
 </style>
 </head><body>
 ${AD_TOP}${NAV('wordle','<button class="navbar__help" id="helpBtn">?</button>')}
@@ -1339,6 +1328,7 @@ ${AD_TOP}${NAV('wordle','<button class="navbar__help" id="helpBtn">?</button>')}
       <button class="key wide" data-k="Enter">Enter</button><button class="key" data-k="z">Z</button><button class="key" data-k="x">X</button><button class="key" data-k="c">C</button><button class="key" data-k="v">V</button><button class="key" data-k="b">B</button><button class="key" data-k="n">N</button><button class="key" data-k="m">M</button><button class="key wide" data-k="Backspace">⌫</button>
     </div>
   </div>
+  <input id="mobileInput" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;border:none;outline:none;pointer-events:none;">
 </main>
 ${AD_BOT}${FOOTER}
 <div class="modal-overlay" id="resultsModal">
@@ -1386,7 +1376,8 @@ var EXTRAS=_lang==="fr"?EXTRAS_FR:EXTRAS_EN;
 var VALID={}; var NORM_VALID={};
 ANSWERS.forEach(function(w){VALID[w]=1;NORM_VALID[normalize(w)]=w;});
 EXTRAS.forEach(function(w){VALID[w]=1;NORM_VALID[normalize(w)]=w;});
-function getDailyWord(){var e=new Date('2024-01-01').getTime(),t=new Date();t.setHours(0,0,0,0);return ANSWERS[Math.floor((t.getTime()-e)/86400000)%ANSWERS.length].toUpperCase();}
+function seededShuffle(arr,seed){var a=arr.slice(),s=seed>>>0;for(var i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0;var j=s%(i+1);var tmp=a[i];a[i]=a[j];a[j]=tmp;}return a;}
+function getDailyWord(){var e=new Date('2024-01-01').getTime(),t=new Date();t.setHours(0,0,0,0);var idx=Math.floor((t.getTime()-e)/86400000);var shuffled=seededShuffle(ANSWERS,0xDEADBEEF);return shuffled[idx%shuffled.length].toUpperCase();}
 function isValidGuess(w){var lo=w.toLowerCase();return !!(VALID[lo]||NORM_VALID[normalize(lo)]);}
 var GAME_ID='wordle',MAX=6,LEN=5;
 var state={answer:'',guesses:[],cur:'',over:false,won:false,row:0};
@@ -1412,7 +1403,14 @@ function saveDay(){if(DEV_MODE)return;localStorage.setItem(TODAY_KEY,JSON.string
 function loadDay(){if(DEV_MODE)return null;try{var r=localStorage.getItem(TODAY_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
 function restoreState(saved){state=Object.assign(state,saved);buildBoard();for(var r=0;r<saved.guesses.length;r++){var g=saved.guesses[r],res=evaluate(g,state.answer);for(var c=0;c<LEN;c++){var t=tile(r,c);t.textContent=g[c];t.className='tile '+res[c];}colorKeys(g,res);}if(!saved.over&&saved.cur){for(var c2=0;c2<saved.cur.length;c2++){var tt=tile(saved.row,c2);tt.textContent=saved.cur[c2];tt.className='tile filled';}}}
 var keysAttached=false;
-function initGame(){var today=new Date();document.getElementById('gameDate').textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});state.answer=getDailyWord();var saved=loadDay();if(saved&&saved.over){restoreState(saved);setTimeout(function(){showResults(saved.won,saved.guesses.length);},600);}else if(saved){restoreState(saved);}else{buildBoard();}if(keysAttached)return;keysAttached=true;document.getElementById('kb').addEventListener('click',function(e){var k=e.target.closest('.key');if(k)handleKey(k.dataset.k);});document.addEventListener('keydown',function(e){if(e.ctrlKey||e.altKey||e.metaKey)return;if(document.querySelector('.modal-overlay.open'))return;if(e.key==='Enter')handleKey('Enter');else if(e.key==='Backspace')handleKey('Backspace');else if(/^[a-zA-Z]$/.test(e.key))handleKey(e.key);});var helpBtn=document.getElementById('helpBtn'),helpModal=document.getElementById('helpModal'),helpClose=document.getElementById('helpClose');if(helpBtn)helpBtn.addEventListener('click',function(){helpModal.classList.add('open');});if(helpClose)helpClose.addEventListener('click',function(){helpModal.classList.remove('open');});if(helpModal)helpModal.addEventListener('click',function(e){if(e.target===helpModal)helpModal.classList.remove('open');});var rm=document.getElementById('resultsModal');if(rm)rm.addEventListener('click',function(e){if(e.target===rm)rm.classList.remove('open');});}
+function initGame(){var today=new Date();document.getElementById('gameDate').textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});state.answer=getDailyWord();var saved=loadDay();if(saved&&saved.over){restoreState(saved);setTimeout(function(){showResults(saved.won,saved.guesses.length);},600);}else if(saved){restoreState(saved);}else{buildBoard();}if(keysAttached)return;keysAttached=true;document.getElementById('kb').addEventListener('click',function(e){var k=e.target.closest('.key');if(k)handleKey(k.dataset.k);});document.addEventListener('keydown',function(e){if(e.ctrlKey||e.altKey||e.metaKey)return;if(document.querySelector('.modal-overlay.open'))return;if(e.key==='Enter')handleKey('Enter');else if(e.key==='Backspace')handleKey('Backspace');else if(/^[a-zA-Z]$/.test(e.key))handleKey(e.key);});
+// Mobile native keyboard
+var mi=document.getElementById('mobileInput');
+if(mi&&(('ontouchstart' in window)||navigator.maxTouchPoints>0)){
+  document.querySelector('.game-main').addEventListener('touchstart',function(){if(!state.over)mi.focus();},{passive:true});
+  mi.addEventListener('keydown',function(e){if(document.querySelector('.modal-overlay.open'))return;if(e.key==='Enter'){handleKey('Enter');}else if(e.key==='Backspace'){handleKey('Backspace');}});
+  mi.addEventListener('input',function(e){var v=this.value;if(v){var last=v[v.length-1];if(/^[a-zA-Z]$/.test(last))handleKey(last);this.value='';}});
+}var helpBtn=document.getElementById('helpBtn'),helpModal=document.getElementById('helpModal'),helpClose=document.getElementById('helpClose');if(helpBtn)helpBtn.addEventListener('click',function(){helpModal.classList.add('open');});if(helpClose)helpClose.addEventListener('click',function(){helpModal.classList.remove('open');});if(helpModal)helpModal.addEventListener('click',function(e){if(e.target===helpModal)helpModal.classList.remove('open');});var rm=document.getElementById('resultsModal');if(rm)rm.addEventListener('click',function(e){if(e.target===rm)rm.classList.remove('open');});}
 document.addEventListener('DOMContentLoaded',function(){initGame();});
 </script>
 </body></html>`;
@@ -1444,7 +1442,7 @@ function pathlePage() {
 .chain-step{font-family:var(--fm);font-size:10px;color:var(--fg3);letter-spacing:.08em;text-transform:uppercase;min-width:28px}
 .path-input{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:340px}
 .word-input{display:flex;gap:5px}
-.winput{width:44px;height:44px;border:2px solid var(--bordm);background:var(--s2);color:var(--fg);font-family:var(--fm);font-size:18px;font-weight:500;text-align:center;text-transform:uppercase;border-radius:2px;outline:none;transition:border-color .12s}
+.winput{width:44px;height:44px;border:2px solid var(--bordm);background:var(--s2);color:var(--fg);font-family:var(--fm);font-size:18px;font-weight:500;text-align:center;text-transform:uppercase;border-radius:2px;outline:none;transition:border-color .12s;touch-action:manipulation}
 .winput:focus{border-color:#5b9cf6;box-shadow:0 0 0 3px rgba(91,156,246,.15)}
 .winput.changed-input{border-color:#f5a623}
 .path-hint{font-family:var(--fm);font-size:10px;color:var(--fg3);letter-spacing:.08em;text-transform:uppercase}
@@ -1548,72 +1546,61 @@ function bfsPath(start,end,wordSet){
   return null;
 }
 
-// Daily puzzle pairs (precomputed to avoid slow BFS on load)
+// Daily puzzle pairs — all have Levenshtein distance ≥ 4 between start and end
 var PUZZLES=[
-  {from:'cold',to:'warm',par:4},
-  {from:'cat',to:'dog',par:3},
-  {from:'word',to:'game',par:4},
-  {from:'head',to:'tail',par:4},
-  {from:'love',to:'hate',par:3},
-  {from:'black',to:'white',par:5},
-  {from:'start',to:'final',par:5},
-  {from:'night',to:'light',par:2},
-  {from:'stone',to:'shine',par:4},
-  {from:'brain',to:'train',par:2},
-  {from:'world',to:'sword',par:4},
-  {from:'blank',to:'bland',par:2},
-  {from:'chase',to:'phase',par:2},
-  {from:'place',to:'plane',par:2},
-  {from:'chain',to:'chair',par:2},
-  {from:'tough',to:'touch',par:2},
-  {from:'beach',to:'reach',par:2},
-  {from:'grade',to:'trade',par:2},
-  {from:'crane',to:'crate',par:2},
-  {from:'sport',to:'short',par:2},
-  {from:'blend',to:'blends',par:3},
-  {from:'steel',to:'steer',par:2},
-  {from:'flesh',to:'fresh',par:2},
-  {from:'price',to:'pride',par:2},
-  {from:'trust',to:'tryst',par:2},
-  {from:'brake',to:'brave',par:3},
-  {from:'green',to:'greed',par:2},
-  {from:'flame',to:'frame',par:2},
-  {from:'close',to:'clone',par:2},
-  {from:'brand',to:'bland',par:2}
+  {from:'black',to:'white',par:6},
+  {from:'start',to:'cloud',par:6},
+  {from:'stone',to:'bring',par:6},
+  {from:'flame',to:'grind',par:6},
+  {from:'brave',to:'shout',par:6},
+  {from:'shore',to:'blunt',par:6},
+  {from:'dance',to:'shirt',par:6},
+  {from:'tooth',to:'crane',par:6},
+  {from:'globe',to:'tramp',par:6},
+  {from:'steam',to:'plunk',par:6},
+  {from:'storm',to:'blaze',par:6},
+  {from:'thick',to:'novel',par:6},
+  {from:'crush',to:'flint',par:6},
+  {from:'giant',to:'broke',par:6},
+  {from:'light',to:'crumb',par:6},
+  {from:'cliff',to:'manor',par:6},
+  {from:'crime',to:'blunt',par:6},
+  {from:'plank',to:'stove',par:6},
+  {from:'birth',to:'swamp',par:6},
+  {from:'frost',to:'climb',par:6},
+  {from:'drove',to:'sting',par:6},
+  {from:'bench',to:'floor',par:6},
+  {from:'tiger',to:'cloud',par:6},
+  {from:'plant',to:'world',par:6},
+  {from:'speak',to:'might',par:6},
+  {from:'choir',to:'stunk',par:6},
+  {from:'blaze',to:'thorn',par:6},
+  {from:'groan',to:'swift',par:6},
+  {from:'witch',to:'stale',par:6},
+  {from:'notch',to:'gripe',par:6}
 ];
-// Extended with 4-letter words that work
+// 4-letter puzzles — Levenshtein distance = 4 (all letters different)
 var PUZZLES4=[
-  {from:'cold',to:'warm',par:4},
-  {from:'word',to:'game',par:4},
-  {from:'head',to:'tail',par:4},
-  {from:'love',to:'hate',par:3},
-  {from:'bold',to:'gold',par:2},
-  {from:'bend',to:'lend',par:2},
-  {from:'best',to:'rest',par:2},
-  {from:'band',to:'sand',par:2},
-  {from:'back',to:'rack',par:2},
-  {from:'bird',to:'bind',par:2},
-  {from:'blow',to:'flow',par:2},
-  {from:'book',to:'look',par:2},
-  {from:'boot',to:'hoot',par:2},
-  {from:'born',to:'corn',par:2},
-  {from:'bump',to:'dump',par:2},
-  {from:'burn',to:'turn',par:2},
-  {from:'bust',to:'dust',par:2},
-  {from:'call',to:'ball',par:2},
-  {from:'came',to:'game',par:2},
-  {from:'care',to:'dare',par:2},
-  {from:'cast',to:'last',par:2},
-  {from:'cave',to:'gave',par:2},
-  {from:'clay',to:'play',par:2},
-  {from:'coil',to:'foil',par:2},
-  {from:'cope',to:'rope',par:2},
-  {from:'cord',to:'word',par:2},
-  {from:'core',to:'bore',par:2},
-  {from:'dark',to:'park',par:2},
-  {from:'dart',to:'part',par:2},
-  {from:'dear',to:'fear',par:2},
-  {from:'deck','to':'peck',par:2}
+  {from:'cold',to:'warm',par:5},
+  {from:'word',to:'game',par:5},
+  {from:'head',to:'tail',par:5},
+  {from:'best',to:'glow',par:5},
+  {from:'dark',to:'love',par:5},
+  {from:'fish',to:'club',par:5},
+  {from:'rock',to:'vine',par:5},
+  {from:'mind',to:'rust',par:5},
+  {from:'frog',to:'wish',par:5},
+  {from:'king',to:'dust',par:5},
+  {from:'fire',to:'band',par:5},
+  {from:'myth',to:'core',par:5},
+  {from:'crow',to:'slim',par:5},
+  {from:'skip',to:'rune',par:5},
+  {from:'dump',to:'clef',par:5},
+  {from:'grow',to:'link',par:5},
+  {from:'debt',to:'clam',par:5},
+  {from:'husk',to:'wine',par:5},
+  {from:'whip',to:'cord',par:5},
+  {from:'fern',to:'stab',par:5}
 ];
 
 function getDailyPuzzle(){
@@ -1846,8 +1833,8 @@ function fastspellPage() {
 .fs-time-num.urgent{color:#e05c5c}
 .fs-score-badge{font-family:var(--fm);font-size:13px;color:var(--fg2);letter-spacing:.06em}
 /* Hex ring */
-.hex-ring{position:relative;width:260px;height:260px;margin:0 auto;overflow:visible}
-.hex-btn{position:absolute;width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:22px;font-weight:700;text-transform:uppercase;cursor:pointer;border:2px solid;transition:transform .12s,box-shadow .15s;user-select:none;letter-spacing:0}
+.hex-ring{position:relative;width:260px;height:260px;margin:0 auto;overflow:visible;touch-action:manipulation}
+.hex-btn{position:absolute;width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:22px;font-weight:700;text-transform:uppercase;cursor:pointer;border:2px solid;transition:transform .12s,box-shadow .15s;user-select:none;letter-spacing:0;touch-action:manipulation}
 .hex-btn:hover{transform:scale(1.08)}
 .hex-btn:active{transform:scale(.94)}
 .hex-outer{background:var(--s2);border-color:var(--border);color:var(--fg)}
@@ -1858,7 +1845,7 @@ function fastspellPage() {
 .fs-letter{width:36px;height:36px;border:2px solid var(--bordm);border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:16px;font-weight:700;text-transform:uppercase;color:#ffffff;background:var(--s2)}
 .fs-letter.center-letter{border-color:#f5a623;color:#f5a623}
 .fs-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.btn-amber{background:linear-gradient(135deg,#c87a10,#f5a623);color:#fff;font-family:var(--fm);font-size:12px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;padding:10px 22px;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;box-shadow:0 2px 14px rgba(245,166,35,.3)}
+.btn-amber{background:linear-gradient(135deg,#c87a10,#f5a623);color:#fff;font-family:var(--fm);font-size:12px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;padding:10px 22px;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;box-shadow:0 2px 14px rgba(245,166,35,.3);touch-action:manipulation}
 .btn-amber:hover{opacity:.9}
 .fs-found{width:100%;max-width:500px}
 .fs-found-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -2143,6 +2130,7 @@ function blindlePage() {
 /* Help modal */
 .help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center}
 .help-overlay.open{display:flex}
+@media(hover:none) and (pointer:coarse){#kb{display:none}}
 .help-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);padding:28px 24px;max-width:380px;width:calc(100% - 32px)}
 .help-title{font-family:var(--fd);font-size:20px;font-weight:700;margin-bottom:16px;text-align:center}
 .help-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -2172,6 +2160,7 @@ ${AD_TOP}${NAV('blindle','<button class="navbar__help" id="helpBtn">?</button>')
       <button class="key wide" data-k="Enter">Enter</button><button class="key" data-k="z">Z</button><button class="key" data-k="x">X</button><button class="key" data-k="c">C</button><button class="key" data-k="v">V</button><button class="key" data-k="b">B</button><button class="key" data-k="n">N</button><button class="key" data-k="m">M</button><button class="key wide" data-k="Backspace">&#x232B;</button>
     </div>
   </div>
+  <input id="blMobileInput" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;border:none;outline:none;pointer-events:none;">
   </div>
 </main>
 ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
@@ -2254,7 +2243,14 @@ function saveBLDay(){if(DEV_MODE)return;localStorage.setItem(BL_TODAY_KEY,JSON.s
 function loadBLDay(){if(DEV_MODE)return null;try{var r=localStorage.getItem(BL_TODAY_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
 function restoreBLState(saved){blState=Object.assign(blState,saved);buildBLBoard();for(var r=0;r<saved.guesses.length;r++){var g=saved.guesses[r],res=evaluateBL(g,blState.answer);var counters=[0,0,0];res.forEach(function(rv){if(rv==='correct')counters[0]++;else if(rv==='present')counters[1]++;else counters[2]++;});for(var c=0;c<BL_LEN;c++){var t=bltile(r,c);t.textContent=g[c];t.className='bl-tile submitted';}var cntEl=blcnt(r);cntEl.style.visibility='visible';var ctrs=cntEl.querySelectorAll('.bl-counter-num');ctrs[0].textContent=counters[0];ctrs[1].textContent=counters[1];ctrs[2].textContent=counters[2];}if(!saved.over&&saved.cur){for(var c2=0;c2<saved.cur.length;c2++){var tt=bltile(saved.row,c2);tt.textContent=saved.cur[c2];tt.className='bl-tile filled';}}}
 var blKeysAttached=false;
-function initBlindle(){var today=new Date();document.getElementById('gameDate').textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});blState.answer=getDailyWordBL();var saved=loadBLDay();if(saved&&saved.over){restoreBLState(saved);setTimeout(function(){showBLResults(saved.won,saved.guesses.length);},600);}else if(saved){restoreBLState(saved);}else{buildBLBoard();}if(blKeysAttached)return;blKeysAttached=true;document.getElementById('kb').addEventListener('click',function(e){var k=e.target.closest('.key');if(k)handleBLKey(k.dataset.k);});document.addEventListener('keydown',function(e){if(e.ctrlKey||e.altKey||e.metaKey)return;if(document.querySelector('.modal-overlay.open')||document.querySelector('.help-overlay.open'))return;if(e.key==='Enter')handleBLKey('Enter');else if(e.key==='Backspace')handleBLKey('Backspace');else if(/^[a-zA-Z]$/.test(e.key))handleBLKey(e.key);});var helpBtn=document.getElementById('helpBtn'),helpModal=document.getElementById('helpModal'),helpClose=document.getElementById('helpClose');if(helpBtn)helpBtn.addEventListener('click',function(){helpModal.classList.add('open');});if(helpClose)helpClose.addEventListener('click',function(){helpModal.classList.remove('open');});if(helpModal)helpModal.addEventListener('click',function(e){if(e.target===helpModal)helpModal.classList.remove('open');});var rm=document.getElementById('resultsModal');if(rm)rm.addEventListener('click',function(e){if(e.target===rm)rm.classList.remove('open');});}
+function initBlindle(){var today=new Date();document.getElementById('gameDate').textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});blState.answer=getDailyWordBL();var saved=loadBLDay();if(saved&&saved.over){restoreBLState(saved);setTimeout(function(){showBLResults(saved.won,saved.guesses.length);},600);}else if(saved){restoreBLState(saved);}else{buildBLBoard();}if(blKeysAttached)return;blKeysAttached=true;document.getElementById('kb').addEventListener('click',function(e){var k=e.target.closest('.key');if(k)handleBLKey(k.dataset.k);});document.addEventListener('keydown',function(e){if(e.ctrlKey||e.altKey||e.metaKey)return;if(document.querySelector('.modal-overlay.open')||document.querySelector('.help-overlay.open'))return;if(e.key==='Enter')handleBLKey('Enter');else if(e.key==='Backspace')handleBLKey('Backspace');else if(/^[a-zA-Z]$/.test(e.key))handleBLKey(e.key);});
+// Mobile native keyboard
+var mi=document.getElementById('blMobileInput');
+if(mi&&(('ontouchstart' in window)||navigator.maxTouchPoints>0)){
+  document.querySelector('.game-main').addEventListener('touchstart',function(){if(!blState.over)mi.focus();},{passive:true});
+  mi.addEventListener('keydown',function(e){if(document.querySelector('.modal-overlay.open')||document.querySelector('.help-overlay.open'))return;if(e.key==='Enter'){handleBLKey('Enter');}else if(e.key==='Backspace'){handleBLKey('Backspace');}});
+  mi.addEventListener('input',function(e){var v=this.value;if(v){var last=v[v.length-1];if(/^[a-zA-Z]$/.test(last))handleBLKey(last);this.value='';}});
+}var helpBtn=document.getElementById('helpBtn'),helpModal=document.getElementById('helpModal'),helpClose=document.getElementById('helpClose');if(helpBtn)helpBtn.addEventListener('click',function(){helpModal.classList.add('open');});if(helpClose)helpClose.addEventListener('click',function(){helpModal.classList.remove('open');});if(helpModal)helpModal.addEventListener('click',function(e){if(e.target===helpModal)helpModal.classList.remove('open');});var rm=document.getElementById('resultsModal');if(rm)rm.addEventListener('click',function(e){if(e.target===rm)rm.classList.remove('open');});}
 document.addEventListener('DOMContentLoaded',function(){initBlindle();});
 </script>
 </body></html>`;
