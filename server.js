@@ -80,7 +80,8 @@ const BRAND = 'Brainiacs';
 const TAGLINE = '<span data-i18n="home.tagline">Train your brain. One day at a time.</span>';
 
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">`;
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3681318443056554" crossorigin="anonymous"><\/script>`;
 
 const CSS = `<style>
 :root {
