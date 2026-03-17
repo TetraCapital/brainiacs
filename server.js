@@ -14,27 +14,28 @@ let db = null;
   try {
     const { Pool } = require('pg');
     db = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
-    db.query(`
-      CREATE TABLE IF NOT EXISTS players (
+    db.query(`CREATE TABLE IF NOT EXISTS players (
         id TEXT PRIMARY KEY,
         name TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         last_seen TIMESTAMPTZ DEFAULT NOW()
-      );
-      CREATE TABLE IF NOT EXISTS game_results (
-        id SERIAL PRIMARY KEY,
-        player_id TEXT NOT NULL REFERENCES players(id),
-        game TEXT NOT NULL,
-        played INT NOT NULL DEFAULT 0,
-        wins INT NOT NULL DEFAULT 0,
-        current_streak INT NOT NULL DEFAULT 0,
-        max_streak INT NOT NULL DEFAULT 0,
-        total_guesses_on_win INT NOT NULL DEFAULT 0,
-        distribution JSONB,
-        updated_at TIMESTAMPTZ DEFAULT NOW(),
-        UNIQUE(player_id, game)
-      );
-    `).then(function() { console.log('[db] Schema ready'); })
+      )`)
+      .then(function() {
+        return db.query(`CREATE TABLE IF NOT EXISTS game_results (
+          id SERIAL PRIMARY KEY,
+          player_id TEXT NOT NULL REFERENCES players(id),
+          game TEXT NOT NULL,
+          played INT NOT NULL DEFAULT 0,
+          wins INT NOT NULL DEFAULT 0,
+          current_streak INT NOT NULL DEFAULT 0,
+          max_streak INT NOT NULL DEFAULT 0,
+          total_guesses_on_win INT NOT NULL DEFAULT 0,
+          distribution JSONB,
+          updated_at TIMESTAMPTZ DEFAULT NOW(),
+          UNIQUE(player_id, game)
+        )`);
+      })
+      .then(function() { console.log('[db] Schema ready'); })
       .catch(function(e) { console.error('[db] Schema error:', e.message); });
   } catch(e) {
     console.log('[db] pg module not available:', e.message);
