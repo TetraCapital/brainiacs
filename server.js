@@ -1281,6 +1281,9 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
             var rank=idx+1, N=rows.length;
             var fill=Math.round((1-(rank-1)/Math.max(1,N))*100);
             var suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
+            var topPct=rank/N*100;
+            var color=topPct<=1?'linear-gradient(90deg,#e8e8f0,#ffffff,#c8c8d8)':topPct<=5?'linear-gradient(90deg,var(--gold),var(--goldl))':topPct<=20?'linear-gradient(90deg,#a0a8b0,#c8d0d8)':'linear-gradient(90deg,#a0634a,#c8845a)';
+            bar.style.background=color;
             bar.style.width=fill+'%';
             lbl.textContent=rank+suffix;
             lbl.title='Rank '+rank+' of '+N+' players';
