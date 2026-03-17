@@ -1466,7 +1466,7 @@ function showResults(won,guesses,stats){if(!stats)stats=GameStats.getStats(GAME_
 function renderDist(dist,hl){var wrap=document.getElementById('rDist'),max=1,i;for(i=1;i<=6;i++)if((dist[i]||0)>max)max=dist[i];var html='<div class="dt">Guess Distribution</div>';for(i=1;i<=6;i++){var cnt=dist[i]||0,pct=Math.round(cnt/max*100),cur=(hl===i);html+='<div class="dr"><span class="dl">'+i+'</span><div class="dbw"><div class="db'+(cur?' cur':'')+'" style="width:'+Math.max(pct,8)+'%"><span>'+cnt+'</span></div></div></div>';}wrap.innerHTML=html;}
 function countdown(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('nwt');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);}
 function shareResult(won,guesses){var rows=state.guesses.map(function(g){return evaluate(g,state.answer).map(function(r){return r==='correct'?'🟩':r==='present'?'🟨':'⬛';}).join('');});var txt=['${BRAND} Wordle — '+new Date().toLocaleDateString(),won?guesses+'/6':'X/6'].concat(rows).join(String.fromCharCode(10));navigator.clipboard.writeText(txt).then(function(){toast('Copied!',1500);}).catch(function(){toast('Could not copy',1200);});}
-var TODAY_KEY='bn_w_'+new Date().toISOString().split('T')[0];
+var TODAY_KEY='bn_w_'+_lang+'_'+new Date().toISOString().split('T')[0];
 function saveDay(){if(DEV_MODE)return;localStorage.setItem(TODAY_KEY,JSON.stringify({answer:state.answer,guesses:state.guesses,cur:state.cur,over:state.over,won:state.won,row:state.row}));}
 function loadDay(){if(DEV_MODE)return null;try{var r=localStorage.getItem(TODAY_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
 function restoreState(saved){state=Object.assign(state,saved);buildBoard();for(var r=0;r<saved.guesses.length;r++){var g=saved.guesses[r],res=evaluate(g,state.answer);for(var c=0;c<LEN;c++){var t=tile(r,c);t.textContent=g[c];t.className='tile '+res[c];}colorKeys(g,res);}if(!saved.over&&saved.cur){for(var c2=0;c2<saved.cur.length;c2++){var tt=tile(saved.row,c2);tt.textContent=saved.cur[c2];tt.className='tile filled';}}}
@@ -1672,9 +1672,32 @@ var PUZZLES4=[
   {from:'fern',to:'stab',par:5}
 ];
 
+var PUZZLES_FR=[
+  {from:'blanc',to:'rouge',par:6},
+  {from:'chien',to:'table',par:6},
+  {from:'train',to:'plage',par:6},
+  {from:'monde',to:'fleur',par:6},
+  {from:'carte',to:'livre',par:6},
+  {from:'force',to:'titre',par:6},
+  {from:'garde',to:'vitre',par:6},
+  {from:'juste',to:'vache',par:6},
+  {from:'large',to:'pomme',par:6},
+  {from:'palme',to:'vente',par:6},
+  {from:'plume',to:'vigne',par:6},
+  {from:'prose',to:'tombe',par:6},
+  {from:'terme',to:'voile',par:6},
+  {from:'trace',to:'belle',par:6},
+  {from:'chant',to:'livre',par:6},
+  {from:'chose',to:'vitre',par:6},
+  {from:'ordre',to:'plume',par:6},
+  {from:'prise',to:'vache',par:6},
+  {from:'titre',to:'mange',par:6},
+  {from:'herbe',to:'plage',par:6}
+];
 function getDailyPuzzle(){
   var e=new Date('2024-01-01').getTime(),t=new Date();t.setHours(0,0,0,0);
   var idx=Math.floor((t.getTime()-e)/86400000);
+  if(_langPW==='fr'){return PUZZLES_FR[idx%PUZZLES_FR.length];}
   var pool=PUZZLES.concat(PUZZLES4);
   return pool[idx%pool.length];
 }
@@ -1815,7 +1838,7 @@ function showPathResult(won,steps,stats){
 }
 
 
-function getPathleKey(){var d=new Date();return 'bn_path_'+d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();}
+function getPathleKey(){var d=new Date();return 'bn_path_'+_langPW+'_'+d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();}
 function savePathleDay(){try{localStorage.setItem(getPathleKey(),JSON.stringify({over:gameState.over,won:gameState.won,path:gameState.path}));}catch(e){}}
 function loadPathleDay(){try{var r=localStorage.getItem(getPathleKey());return r?JSON.parse(r):null;}catch(e){return null;}}
 function initPathle(){
@@ -2307,7 +2330,7 @@ function toastBL(msg,dur){dur=dur||1200;var t=document.getElementById('toast');t
 function showBLResults(won,guesses,stats){if(!stats)stats=GameStats.getStats(BL_GAME_ID);document.getElementById('rOut').textContent=won?'\uD83C\uDF89 Brilliant!':'\uD83D\uDE14 Better luck next time';document.getElementById('rOut').className='r-out '+(won?'win':'lose');document.getElementById('rWord').textContent='The word was: '+blState.answer;document.getElementById('rP').textContent=stats.played;document.getElementById('rW').textContent=GameStats.getWinRate(stats)+'%';document.getElementById('rS').textContent=stats.currentStreak;document.getElementById('rMS').textContent=stats.maxStreak;countdownBL();document.getElementById('shareBtn').onclick=function(){shareBLResult(won,guesses);};document.getElementById('resultsModal').classList.add('open');}
 function countdownBL(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('nwt');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);}
 function shareBLResult(won,guesses){var rows=blState.guesses.map(function(g){var res=evaluateBL(g,blState.answer);var c=res.filter(function(r){return r==='correct';}).length,p=res.filter(function(r){return r==='present';}).length,a=res.filter(function(r){return r==='absent';}).length;return '\uD83D\uDFE9'+c+' \uD83D\uDFE8'+p+' \uD83D\uDFE5'+a;});var txt=['${BRAND} Blindle',won?guesses+'/9':'X/9'].concat(rows).join(String.fromCharCode(10));navigator.clipboard.writeText(txt).then(function(){toastBL('Copied!',1500);}).catch(function(){toastBL('Could not copy',1200);});}
-var BL_TODAY_KEY='bn_bl_'+new Date().toISOString().split('T')[0];
+var BL_TODAY_KEY='bn_bl_'+_langBL+'_'+new Date().toISOString().split('T')[0];
 function saveBLDay(){if(DEV_MODE)return;localStorage.setItem(BL_TODAY_KEY,JSON.stringify({answer:blState.answer,guesses:blState.guesses,cur:blState.cur,over:blState.over,won:blState.won,row:blState.row}));}
 function loadBLDay(){if(DEV_MODE)return null;try{var r=localStorage.getItem(BL_TODAY_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
 function restoreBLState(saved){blState=Object.assign(blState,saved);buildBLBoard();for(var r=0;r<saved.guesses.length;r++){var g=saved.guesses[r],res=evaluateBL(g,blState.answer);var counters=[0,0,0];res.forEach(function(rv){if(rv==='correct')counters[0]++;else if(rv==='present')counters[1]++;else counters[2]++;});for(var c=0;c<BL_LEN;c++){var t=bltile(r,c);t.textContent=g[c];t.className='bl-tile submitted';}var cntEl=blcnt(r);cntEl.style.visibility='visible';var ctrs=cntEl.querySelectorAll('.bl-counter-num');ctrs[0].textContent=counters[0];ctrs[1].textContent=counters[1];ctrs[2].textContent=counters[2];}if(!saved.over&&saved.cur){for(var c2=0;c2<saved.cur.length;c2++){var tt=bltile(saved.row,c2);tt.textContent=saved.cur[c2];tt.className='bl-tile filled';}}}
