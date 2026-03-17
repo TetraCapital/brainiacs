@@ -1062,7 +1062,7 @@ ${AD_TOP}${NAV('home')}
       </div>
       </div>
       <div id="rankView" style="display:none">
-        <div class="pstat-title" style="color:var(--gold)">Arena Rank</div>
+        <div class="pstat-title" style="color:var(--gold)">Rank Percentile</div>
         <div id="rankRadar">
           <div class="pstat-row">
             <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span>Wordle</span>
@@ -1085,7 +1085,6 @@ ${AD_TOP}${NAV('home')}
             <span class="pstat-pct" id="rp-blindle">—</span>
           </div>
         </div>
-        <div style="font-family:var(--fm);font-size:9px;color:var(--fg3);margin-top:10px;line-height:1.5">Full bar = 1st place</div>
       </div>
       </div>
     </div>
@@ -1280,11 +1279,10 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
             var idx=rows.findIndex(function(r){return r.playerId===myUid;});
             if(idx===-1||!myUid){lbl.textContent='—';return;}
             var rank=idx+1, N=rows.length;
-            // fill: 100% = 1st, approaches 0% as rank→last
             var fill=Math.round((1-(rank-1)/Math.max(1,N))*100);
-            var topPct=Math.ceil(rank/N*100);
+            var suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
             bar.style.width=fill+'%';
-            lbl.textContent='T'+topPct+'%';
+            lbl.textContent=rank+suffix;
             lbl.title='Rank '+rank+' of '+N+' players';
           })
           .catch(function(){});
