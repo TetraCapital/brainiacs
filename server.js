@@ -6,23 +6,9 @@ const path_mod = require('path');
 // Removes obvious plurals, 3rd-person -s/-es, and -ed past tenses from an answer pool.
 // The full word list is still used for guess validation; only answers are filtered.
 function filterAnswerWords(words) {
-  const set = new Set(words);
   return words.filter(w => {
-    // Drop words ending in -ed (past tense / adjective)
-    if (w.endsWith('ed')) {
-      // Keep if removing -ed doesn't leave a valid root (e.g. "speed", "breed", "creed")
-      const root2 = w.slice(0, -2); // e.g. "talk" from "talked"
-      const root1 = w.slice(0, -1); // e.g. "bake" from "baked"
-      if (set.has(root2) || set.has(root1)) return false;
-    }
-    // Drop words ending in -s (plurals / 3rd-person verbs)
-    if (w.endsWith('s') && w.length >= 4) {
-      const root1 = w.slice(0, -1);  // cats → cat
-      const root2 = w.slice(0, -2);  // foxes → fox (drop -es)
-      const root3 = w.slice(0, -3);  // catches → catch (drop -es from -ches)
-      // Only drop if the stem is itself a valid dictionary word
-      if (set.has(root1) || (w.endsWith('es') && (set.has(root2) || set.has(root3)))) return false;
-    }
+    // Drop all words ending in -s unless they end in -ss (e.g. keep brass, dress, cross)
+    if (w.endsWith('s') && !w.endsWith('ss')) return false;
     return true;
   });
 }
@@ -215,12 +201,27 @@ a{color:var(--gold);text-decoration:none}a:hover{color:var(--goldl)}
 /* ── GAME PAGE VIEWPORT FIT ─────────────────────────────────── */
 body.game-page{height:100dvh;overflow:hidden;display:flex;flex-direction:column}
 body.game-page .game-main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+body.game-page .footer{display:none}
+body.game-page .ad-banner--bottom{display:none}
 @media(max-width:640px){
   body.game-page .gh{padding:10px 16px 8px}
   body.game-page .gt{font-size:22px}
   body.game-page .gs{font-size:10px;margin-top:2px}
   body.game-page .gm{font-size:10px;margin-top:2px}
   body.game-page .game-main{padding:12px 16px 16px}
+}
+@media(max-height:820px){
+  body.game-page .gh{padding:10px 16px 8px}
+  body.game-page .gt{font-size:26px}
+  body.game-page .gs{font-size:10px;margin-top:2px}
+  body.game-page .game-main{padding:14px 16px 18px;gap:14px}
+}
+@media(max-height:680px){
+  body.game-page .gh{padding:6px 16px 6px}
+  body.game-page .gt{font-size:22px}
+  body.game-page .gs{display:none}
+  body.game-page .gm{display:none}
+  body.game-page .game-main{padding:8px 16px 10px;gap:8px}
 }
 </style>`;
 
@@ -842,22 +843,24 @@ function homePage() {
 
 .home-body{max-width:1100px;margin:0 auto;padding:40px 24px 72px;flex:1;width:100%;display:flex;gap:40px;align-items:flex-start}
 .profile-panel{width:220px;flex-shrink:0;position:sticky;top:80px}
-.profile-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rl);padding:22px 18px;margin-bottom:16px}
+.profile-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:16px}
+.profile-card-header{background:#f5d800;border-bottom:2px solid #c9a800;padding:11px 18px;display:flex;align-items:center;justify-content:center}
+.profile-card-header-text{font-family:var(--fm);font-size:16px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1a1400}
+.profile-card-body{padding:20px 18px 22px}
 .profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldl));display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;box-shadow:0 0 20px rgba(201,168,76,.3)}
-.profile-name{font-family:var(--fd);font-size:16px;font-weight:700;text-align:center;margin-bottom:2px}
-.profile-sub{font-family:var(--fm);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);text-align:center;margin-bottom:18px}
+.profile-name{font-family:var(--fd);font-size:16px;font-weight:700;text-align:center;margin-bottom:14px}
 .profile-divider{border:none;border-top:1px solid var(--border);margin:14px 0}
-.pstat-title{font-family:var(--fm);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);margin-bottom:10px}
+.pstat-title{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ffffff;margin-bottom:10px}
 .pstat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
 .pstat-label{font-size:11px;color:var(--fg2);display:flex;align-items:center;gap:6px}
 .pstat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .pstat-bar-wrap{flex:1;margin:0 8px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
 .pstat-bar{height:100%;border-radius:2px;width:0%;transition:width 1s cubic-bezier(.4,0,.2,1)}
 .pstat-pct{font-family:var(--fm);font-size:10px;color:var(--fg2);min-width:26px;text-align:right}
-.strength-label{font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-top:14px;margin-bottom:6px}
-.strength-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:3px;font-family:var(--fm);font-size:10px;margin-bottom:5px}
-.badge-str{background:rgba(74,158,110,.15);color:#5dbf84;border:1px solid rgba(74,158,110,.3)}
-.badge-weak{background:rgba(224,92,92,.1);color:#e05c5c;border:1px solid rgba(224,92,92,.25)}
+.strength-label{font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:14px;margin-bottom:7px}
+.strength-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:4px;font-family:var(--fm);font-size:10px;font-weight:600;margin-bottom:5px}
+.badge-str{background:#1e4d35;color:#6ddb96;border:1px solid #3a8f5e;text-shadow:0 0 8px rgba(109,219,150,.3)}
+.badge-weak{background:#4a1a1a;color:#ff7070;border:1px solid #8f3a3a;text-shadow:0 0 8px rgba(255,112,112,.25)}
 
 .games-area{flex:1;min-width:0}
 .section-label{font-family:var(--fm);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg3);text-align:center;margin-bottom:36px}
@@ -876,11 +879,9 @@ function homePage() {
 .legend-item--disabled:hover{transform:none!important;background:transparent!important;border-color:transparent!important}
 .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .legend-info{flex:1}
-.legend-name{font-family:var(--fd);font-size:17px;font-weight:700;line-height:1.1;margin-bottom:2px}
+.legend-name{font-family:var(--fd);font-size:26px;font-weight:700;line-height:1.1;margin-bottom:2px}
 .legend-desc{font-size:11px;color:var(--fg2);line-height:1.5}
 .legend-badge{font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;flex-shrink:0;margin-top:3px}
-.badge-live{background:rgba(74,158,110,.2);color:#5dbf84;border:1px solid rgba(74,158,110,.4)}
-.badge-soon{background:var(--s3);color:var(--fg3);border:1px solid var(--border)}
 
 @media(max-width:900px){.home-body{flex-direction:column}.profile-panel{width:100%;position:static}.camembert-layout{gap:28px}}
 </style>
@@ -896,11 +897,14 @@ ${AD_TOP}${NAV('home')}
   <!-- LEFT: PROFILE PANEL -->
   <aside class="profile-panel">
     <div class="profile-card">
+      <div class="profile-card-header">
+        <span class="profile-card-header-text">Your Brainiac</span>
+      </div>
+      <div class="profile-card-body">
       <div class="profile-avatar" id="profileAvatar">🧠</div>
       <div class="profile-name" id="profileName">Anonymous</div>
-      <div class="profile-sub">Your Brainiac</div>
       <hr class="profile-divider">
-      <div class="pstat-title">Skill Radar</div>
+      <div class="pstat-title">Success Rate</div>
       <div id="skillRadar">
         <div class="pstat-row">
           <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span><span data-i18n="wordle.title">Wordle</span></span>
@@ -924,10 +928,11 @@ ${AD_TOP}${NAV('home')}
         </div>
       </div>
       <div id="strengthBox" style="display:none">
-        <div class="strength-label" style="color:var(--greenl)">🏆 Strengths</div>
+        <div class="strength-label" style="color:#6ddb96">🏆 Strengths</div>
         <div id="strengthList"></div>
-        <div class="strength-label" style="color:#e05c5c;margin-top:8px">🎯 To improve</div>
+        <div class="strength-label" style="color:#ff7070;margin-top:8px">🎯 To improve</div>
         <div id="weakList"></div>
+      </div>
       </div>
     </div>
   </aside>
@@ -950,7 +955,6 @@ ${AD_TOP}${NAV('home')}
             <div class="legend-name" style="color:#e05c5c">Wordle</div>
             <div class="legend-desc" data-i18n="home.wordle.desc">Crack the 5-letter word in 6 tries.<br>Vocabulary &amp; deduction.</div>
           </div>
-          <div class="legend-badge badge-live"><span data-i18n="home.live">Live</span></div>
         </a>
         <a href="/pathle" class="legend-item" data-idx="1" id="leg1">
           <div class="legend-dot" style="background:#5b9cf6"></div>
@@ -958,7 +962,6 @@ ${AD_TOP}${NAV('home')}
             <div class="legend-name" style="color:#5b9cf6">Pathle</div>
             <div class="legend-desc" data-i18n="home.pathle.desc">Transform one word into another, one letter at a time.<br>Logic &amp; vocabulary.</div>
           </div>
-          <div class="legend-badge badge-live">Live</div>
         </a>
         <a href="/fastspell" class="legend-item" data-idx="2" id="leg2">
           <div class="legend-dot" style="background:#f5a623"></div>
@@ -966,7 +969,6 @@ ${AD_TOP}${NAV('home')}
             <div class="legend-name" style="color:#f5a623">FastSpell</div>
             <div class="legend-desc" data-i18n="home.fs.desc">Build words from 7 letters. The centre letter is mandatory.<br>Word power &amp; speed.</div>
           </div>
-          <div class="legend-badge badge-live">Live</div>
         </a>
         <a href="/blindle" class="legend-item" data-idx="3" id="leg3">
           <div class="legend-dot" style="background:#a06bf5"></div>
@@ -974,7 +976,6 @@ ${AD_TOP}${NAV('home')}
             <div class="legend-name" style="color:#a06bf5">Blindle</div>
             <div class="legend-desc" data-i18n="home.blindle.desc">Guess the word in 9 tries — but you only see counts.<br>Deduction without hints.</div>
           </div>
-          <div class="legend-badge badge-live">Live</div>
         </a>
       </div>
     </div>
@@ -1318,7 +1319,7 @@ function wordlePage() {
 .game-main{display:flex;flex-direction:column;align-items:center;padding:24px 16px 36px;gap:22px;flex:1}
 .board{display:grid;grid-template-rows:repeat(6,1fr);gap:6px}
 .row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.tile{width:60px;height:60px;border:2px solid var(--bordm);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:26px;font-weight:700;text-transform:uppercase;color:#ffffff;background:transparent;user-select:none;border-radius:2px;transition:border-color .08s}
+.tile{width:var(--tile-sz,60px);height:var(--tile-sz,60px);border:2px solid var(--bordm);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:var(--tile-fs,26px);font-weight:700;text-transform:uppercase;color:#ffffff;background:transparent;user-select:none;border-radius:2px;transition:border-color .08s}
 .tile.filled{border-color:#484030}
 .tile.pop{animation:tPop .12s ease}
 @keyframes tPop{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
@@ -1333,7 +1334,7 @@ function wordlePage() {
 @keyframes tBounce{0%,100%{transform:translateY(0)}35%{transform:translateY(-14px)}65%{transform:translateY(-6px)}}
 .kb{display:flex;flex-direction:column;gap:7px;width:100%;max-width:500px}
 .kb-row{display:flex;justify-content:center;gap:6px}
-.key{height:56px;min-width:38px;padding:0 5px;background:var(--s3);border:1px solid var(--border);border-radius:var(--r);color:var(--fg);font-family:var(--fm);font-size:13px;font-weight:500;cursor:pointer;text-transform:uppercase;user-select:none;flex:1;max-width:43px;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .08s}
+.key{height:var(--key-h,56px);min-width:38px;padding:0 5px;background:var(--s3);border:1px solid var(--border);border-radius:var(--r);color:var(--fg);font-family:var(--fm);font-size:13px;font-weight:500;cursor:pointer;text-transform:uppercase;user-select:none;flex:1;max-width:43px;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .08s}
 .key.wide{max-width:66px;font-size:11px}
 .key:hover{background:#2a2a2a}.key:active{transform:scale(.93)}
 .key.kc{background:var(--correct)!important;border-color:var(--correct)!important;color:#fff!important}
@@ -1478,6 +1479,7 @@ if(mi&&(('ontouchstart' in window)||navigator.maxTouchPoints>0)){
   mi.addEventListener('input',function(e){var v=this.value;if(v){var last=v[v.length-1];if(/^[a-zA-Z]$/.test(last))handleKey(last);this.value='';}});
 }var helpBtn=document.getElementById('helpBtn'),helpModal=document.getElementById('helpModal'),helpClose=document.getElementById('helpClose');if(helpBtn)helpBtn.addEventListener('click',function(){helpModal.classList.add('open');});if(helpClose)helpClose.addEventListener('click',function(){helpModal.classList.remove('open');});if(helpModal)helpModal.addEventListener('click',function(e){if(e.target===helpModal)helpModal.classList.remove('open');});var rm=document.getElementById('resultsModal');if(rm)rm.addEventListener('click',function(e){if(e.target===rm)rm.classList.remove('open');});}
 document.addEventListener('DOMContentLoaded',function(){initGame();});
+(function(){function fitTiles(){if(window.innerWidth<=640)return;var main=document.querySelector('.game-main');if(!main)return;var h=main.clientHeight;var T=Math.floor((h-126)/8.79);T=Math.max(38,Math.min(60,T));var r=document.documentElement;r.style.setProperty('--tile-sz',T+'px');r.style.setProperty('--tile-fs',Math.round(T*0.433)+'px');r.style.setProperty('--key-h',Math.min(56,Math.round(T*0.933))+'px');}document.addEventListener('DOMContentLoaded',fitTiles);window.addEventListener('resize',fitTiles);if(window.ResizeObserver)document.addEventListener('DOMContentLoaded',function(){var m=document.querySelector('.game-main');if(m)new ResizeObserver(fitTiles).observe(m);});})();
 </script>
 </body></html>`;
 }
@@ -2139,7 +2141,7 @@ function blindlePage() {
 .bl-row{display:flex;align-items:center;gap:10px}
 .bl-num{font-family:var(--fm);font-size:11px;color:var(--fg3);width:18px;text-align:right;flex-shrink:0}
 .bl-tiles{display:flex;gap:5px;flex:1}
-.bl-tile{width:44px;height:44px;border:2px solid var(--bordm);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:18px;font-weight:500;text-transform:uppercase;background:transparent;border-radius:2px;color:#ffffff;font-weight:700;transition:border-color .1s}
+.bl-tile{width:var(--bl-tile-sz,44px);height:var(--bl-tile-sz,44px);border:2px solid var(--bordm);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:var(--bl-tile-fs,18px);font-weight:500;text-transform:uppercase;background:transparent;border-radius:2px;color:#ffffff;font-weight:700;transition:border-color .1s}
 .bl-tile.filled{border-color:var(--fg2)}
 .bl-tile.active-input{border-color:#a06bf5}
 .bl-tile.submitted{background:var(--s2);border-color:var(--border);color:#e8e0d8;font-weight:700}
@@ -2147,7 +2149,7 @@ function blindlePage() {
 @keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 /* Counters - the key mechanic */
 .bl-counters{display:flex;gap:6px;flex-shrink:0}
-.bl-counter{width:36px;height:44px;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid var(--border)}
+.bl-counter{width:var(--bl-counter-w,36px);height:var(--bl-tile-sz,44px);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid var(--border)}
 .bl-counter-num{font-family:var(--fm);font-size:16px;font-weight:500;line-height:1}
 .bl-counter-dot{width:8px;height:8px;border-radius:50%}
 .bl-counter.correct{background:#4a9e6e;border-color:#4a9e6e}
@@ -2164,7 +2166,7 @@ function blindlePage() {
 /* Keyboard */
 .keyboard{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px}
 .kb-row{display:flex;gap:5px}
-.key{min-width:34px;height:46px;padding:0 6px;border:none;border-radius:4px;background:var(--s2);color:#ffffff;font-family:var(--fm);font-size:12px;font-weight:600;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s}
+.key{min-width:34px;height:var(--key-h,46px);padding:0 6px;border:none;border-radius:4px;background:var(--s2);color:#ffffff;font-family:var(--fm);font-size:12px;font-weight:600;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s}
 .key:active{transform:scale(.95)}
 .key.wide{min-width:54px;font-size:11px}
 .kc{background:var(--correct);color:#fff}
@@ -2318,6 +2320,7 @@ if(mi&&(('ontouchstart' in window)||navigator.maxTouchPoints>0)){
   mi.addEventListener('input',function(e){var v=this.value;if(v){var last=v[v.length-1];if(/^[a-zA-Z]$/.test(last))handleBLKey(last);this.value='';}});
 }var helpBtn=document.getElementById('helpBtn'),helpModal=document.getElementById('helpModal'),helpClose=document.getElementById('helpClose');if(helpBtn)helpBtn.addEventListener('click',function(){helpModal.classList.add('open');});if(helpClose)helpClose.addEventListener('click',function(){helpModal.classList.remove('open');});if(helpModal)helpModal.addEventListener('click',function(e){if(e.target===helpModal)helpModal.classList.remove('open');});var rm=document.getElementById('resultsModal');if(rm)rm.addEventListener('click',function(e){if(e.target===rm)rm.classList.remove('open');});}
 document.addEventListener('DOMContentLoaded',function(){initBlindle();});
+(function(){function fitTiles(){if(window.innerWidth<=640)return;var main=document.querySelector('.game-main');if(!main)return;var h=main.clientHeight;var T=Math.floor((h-168)/12.135);T=Math.max(28,Math.min(44,T));var r=document.documentElement;r.style.setProperty('--bl-tile-sz',T+'px');r.style.setProperty('--bl-tile-fs',Math.round(T*0.409)+'px');r.style.setProperty('--bl-counter-w',Math.round(T*0.818)+'px');r.style.setProperty('--key-h',Math.min(46,Math.round(T*1.045))+'px');}document.addEventListener('DOMContentLoaded',fitTiles);window.addEventListener('resize',fitTiles);if(window.ResizeObserver)document.addEventListener('DOMContentLoaded',function(){var m=document.querySelector('.game-main');if(m)new ResizeObserver(fitTiles).observe(m);});})();
 </script>
 </body></html>`;
 }
