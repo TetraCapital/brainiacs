@@ -1352,7 +1352,7 @@ ${AD_TOP}${NAV('rankings')}
     <button class="tab" data-game="blindle">🔮 Blindle</button>
   </div>
   <div class="table-wrap"><table>
-    <thead><tr><th>#</th><th><span data-i18n="rankings.player">Player</span></th><th><span data-i18n="rankings.played">Played</span></th><th><span data-i18n="rankings.winrate">Win %</span></th><th><span data-i18n="wordle.avgguesses">Avg Guesses</span></th><th><span data-i18n="wordle.maxstreak">Max Streak</span></th></tr></thead>
+    <thead id="thead"><tr><th>#</th><th><span data-i18n="rankings.player">Player</span></th><th><span data-i18n="rankings.played">Played</span></th><th id="th-metric">Win %</th><th id="th-sub">Avg Guesses</th><th><span data-i18n="wordle.maxstreak">Max Streak</span></th></tr></thead>
     <tbody id="tbody"><tr><td colspan="6" class="empty">No players yet — play a game first!</td></tr></tbody>
   </table></div>
   <p class="note" id="rankNote">Loading global rankings…</p>
@@ -1363,6 +1363,11 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 function renderRankings(gameId) {
   var note = document.getElementById('rankNote');
   var tbody = document.getElementById('tbody');
+  var thMetric = document.getElementById('th-metric');
+  var thSub = document.getElementById('th-sub');
+  var isFS = gameId === 'fastspell';
+  if (thMetric) thMetric.textContent = isFS ? 'Total Pts' : 'Win %';
+  if (thSub) thSub.textContent = isFS ? '' : 'Avg Guesses';
   tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
   BnSync.fetchRankings(gameId, function(rows) {
     var myUid = BnSync.uid();
@@ -1374,13 +1379,13 @@ function renderRankings(gameId) {
     if (!rows.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">No players yet — play a game first!</td></tr>'; return; }
     tbody.innerHTML = rows.map(function(e, i) {
       var r=i+1, rc=r===1?'g':r===2?'s':r===3?'b':'';
-      var wp=e.played>0?Math.round(e.wins/e.played*100):0;
-      var ag=e.wins>0?(e.totalGuessesOnWin/e.wins).toFixed(2):'—';
       var isYou = myUid ? e.playerId===myUid : e.playerId===cur.id;
       var init=(e.name||'?')[0].toUpperCase();
+      var metric = isFS ? '<span class="ag">'+e.totalGuessesOnWin+'</span>' : '<span class="wp">'+(e.played>0?Math.round(e.wins/e.played*100):0)+'%</span>';
+      var sub = isFS ? '' : '<span class="ag">'+(e.wins>0?(e.totalGuessesOnWin/e.wins).toFixed(2):'—')+'</span>';
       return '<tr><td><span class="rn '+rc+'">'+r+'</span></td>'+
         '<td><div class="pc"><div class="av">'+init+'</div><span>'+esc(e.name||'Anonymous')+'</span>'+(isYou?'<span class="you">You</span>':'')+'</div></td>'+
-        '<td>'+e.played+'</td><td><span class="wp">'+wp+'%</span></td><td><span class="ag">'+ag+'</span></td><td>'+e.maxStreak+'</td></tr>';
+        '<td>'+e.played+'</td><td>'+metric+'</td><td>'+sub+'</td><td>'+e.maxStreak+'</td></tr>';
     }).join('');
   });
 }
@@ -2290,7 +2295,7 @@ function renderFoundWords(){var div=document.getElementById('fsWords');div.inner
 function shuffleLetters(){var arr=fsState.letters.slice();for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}fsState.letters=arr;buildHex();}
 function buildHex(){var ring=document.getElementById('hexRing');ring.innerHTML='';var positions=[{angle:0},{angle:60},{angle:120},{angle:180},{angle:240},{angle:300}];var R=88,cx=130,cy=130;positions.forEach(function(pos,idx){var rad=pos.angle*Math.PI/180;var x=cx+R*Math.cos(rad)-34,y=cy+R*Math.sin(rad)-34;var btn=document.createElement('button');btn.className='hex-btn hex-outer';btn.textContent=fsState.letters[idx].toUpperCase();btn.style.left=x+'px';btn.style.top=y+'px';(function(letter){btn.onclick=function(){addLetter(letter);};})(fsState.letters[idx]);ring.appendChild(btn);});var cb=document.createElement('button');cb.className='hex-btn hex-center';cb.textContent=fsState.center.toUpperCase();cb.style.left=(cx-34)+'px';cb.style.top=(cy-34)+'px';cb.onclick=function(){addLetter(fsState.center);};ring.appendChild(cb);}
 function startTimer(){fsState.timeLeft=60;var fill=document.getElementById('fsTimerFill');var timeNum=document.getElementById('fsTimeNum');function tick(){fsState.timeLeft--;var pct=Math.max(0,fsState.timeLeft/60*100);fill.style.width=pct+'%';timeNum.textContent=fsState.timeLeft;if(fsState.timeLeft<=10){fill.classList.add('urgent');timeNum.classList.add('urgent');}if(fsState.timeLeft<=0){clearInterval(fsState.timerInterval);endGame();}}fsState.timerInterval=setInterval(tick,1000);}
-function endGame(){fsState.started=false;saveFSDay(fsState.score,Object.keys(fsState.found),fsState.pangram);var fsStats=GameStats.recordResult('fastspell',fsState.score>0,Object.keys(fsState.found).length);if(!fsStats)fsStats=GameStats.getStats('fastspell');try{var fsRaw=JSON.parse(localStorage.getItem('bn_stats_fastspell')||'{}');fsRaw.totalWords=(fsRaw.totalWords||0)+Object.keys(fsState.found).length;fsRaw.bestScore=Math.max(fsRaw.bestScore||0,fsState.score);fsRaw.pangrams=(fsRaw.pangrams||0)+(fsState.pangram?1:0);localStorage.setItem('bn_stats_fastspell',JSON.stringify(fsRaw));}catch(e){}fsStats=GameStats.getStats('fastspell');document.getElementById('fsFinalScore').textContent=fsState.score;var rw=document.getElementById('fsResultWords');rw.innerHTML='';var words=Object.keys(fsState.found).sort(function(a,b){return fsState.found[b]-fsState.found[a];});words.forEach(function(w){var span=document.createElement('span');span.className='fs-word-tag'+(isPangram(w)?' pangram':w.length>=6?' long':'');span.textContent=w+(isPangram(w)?' \u2B50':'');rw.appendChild(span);});document.getElementById('fsStatPlayed').textContent=fsStats.played||0;var best=0;try{var fsb=localStorage.getItem('bn_fs_best');best=fsb?Math.max(parseInt(fsb)||0,fsState.score):fsState.score;localStorage.setItem('bn_fs_best',best);}catch(e){best=fsState.score;}document.getElementById('fsStatBest').textContent=best;/* streak stat removed - no concept of streak in FastSpell */document.getElementById('fsStatWords').textContent=Object.keys(fsState.found).length;(function(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('fsCountdown');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);})();var fsShareBtn=document.getElementById('fsShareBtn');if(fsShareBtn)fsShareBtn.onclick=function(){var pg=fsState.pangram?' \uD83C\uDF1F':'';var txt='${BRAND} FastSpell'+String.fromCharCode(10)+fsState.score+' pts \u2022 '+Object.keys(fsState.found).length+' words'+pg;navigator.clipboard.writeText(txt).then(function(){fsShareBtn.textContent='Copied!';setTimeout(function(){fsShareBtn.textContent='Share Result';},1500);}).catch(function(){});};document.getElementById('fsResultModal').classList.add('open');}
+function endGame(){fsState.started=false;saveFSDay(fsState.score,Object.keys(fsState.found),fsState.pangram);var fsStats=GameStats.recordResult('fastspell',fsState.score>0,fsState.score);if(!fsStats)fsStats=GameStats.getStats('fastspell');try{var fsRaw=JSON.parse(localStorage.getItem('bn_stats_fastspell')||'{}');fsRaw.totalWords=(fsRaw.totalWords||0)+Object.keys(fsState.found).length;fsRaw.bestScore=Math.max(fsRaw.bestScore||0,fsState.score);fsRaw.pangrams=(fsRaw.pangrams||0)+(fsState.pangram?1:0);localStorage.setItem('bn_stats_fastspell',JSON.stringify(fsRaw));}catch(e){}fsStats=GameStats.getStats('fastspell');document.getElementById('fsFinalScore').textContent=fsState.score;var rw=document.getElementById('fsResultWords');rw.innerHTML='';var words=Object.keys(fsState.found).sort(function(a,b){return fsState.found[b]-fsState.found[a];});words.forEach(function(w){var span=document.createElement('span');span.className='fs-word-tag'+(isPangram(w)?' pangram':w.length>=6?' long':'');span.textContent=w+(isPangram(w)?' \u2B50':'');rw.appendChild(span);});document.getElementById('fsStatPlayed').textContent=fsStats.played||0;var best=0;try{var fsb=localStorage.getItem('bn_fs_best');best=fsb?Math.max(parseInt(fsb)||0,fsState.score):fsState.score;localStorage.setItem('bn_fs_best',best);}catch(e){best=fsState.score;}document.getElementById('fsStatBest').textContent=best;/* streak stat removed - no concept of streak in FastSpell */document.getElementById('fsStatWords').textContent=Object.keys(fsState.found).length;(function(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('fsCountdown');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);})();var fsShareBtn=document.getElementById('fsShareBtn');if(fsShareBtn)fsShareBtn.onclick=function(){var pg=fsState.pangram?' \uD83C\uDF1F':'';var txt='${BRAND} FastSpell'+String.fromCharCode(10)+fsState.score+' pts \u2022 '+Object.keys(fsState.found).length+' words'+pg;navigator.clipboard.writeText(txt).then(function(){fsShareBtn.textContent='Copied!';setTimeout(function(){fsShareBtn.textContent='Share Result';},1500);}).catch(function(){});};document.getElementById('fsResultModal').classList.add('open');}
 
 function getFSKey(){var d=new Date();return 'bn_fs_'+d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();}
 function saveFSDay(score,words,pangram){try{localStorage.setItem(getFSKey(),JSON.stringify({score:score,words:words,pangram:pangram}));}catch(e){}}
@@ -2767,16 +2772,16 @@ const server = http.createServer(async function(req, res) {
       if (url === '/api/rankings' && req.method === 'GET') {
         var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
         var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : 'wordle';
+        var orderBy = game === 'fastspell'
+          ? 'gr.total_guesses_on_win DESC, gr.played DESC'
+          : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
         var result = await db.query(
           `SELECT gr.player_id AS "playerId", p.name, gr.played, gr.wins,
                   gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak"
            FROM game_results gr
            JOIN players p ON p.id = gr.player_id
            WHERE gr.game=$1 AND p.name IS NOT NULL AND gr.played > 0
-           ORDER BY
-             (CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC,
-             (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC,
-             gr.played DESC
+           ORDER BY ${orderBy}
            LIMIT 100`,
           [game]
         );
