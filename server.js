@@ -805,7 +805,7 @@ function normalize(s){
 `;
 
 
-const PLAYER_MODAL = `<div class="modal-overlay" id="playerModal"><div class="modal"><h2>Your Name</h2><p>Shows on the leaderboard.</p><input type="text" id="playerNameInput" placeholder="e.g. Alex" maxlength="20"/><button class="btn-primary" id="savePlayerName">Save</button></div></div>`;
+const PLAYER_MODAL = `<div class="modal-overlay" id="playerModal"><div class="modal"><h2>Your Name</h2><p>Shows on the leaderboard.</p><input type="text" id="playerNameInput" placeholder="e.g. Gaddaf" maxlength="20"/><button class="btn-primary" id="savePlayerName">Save</button></div></div>`;
 
 const FRIEND_MODAL = `
 <div class="invite-modal" id="inviteModal">
@@ -2606,6 +2606,37 @@ document.addEventListener('DOMContentLoaded', function(){ renderBadges(); });
 </body></html>`;
 }
 
+function resetPage() {
+  return `<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset Identity</title>
+<style>
+body{background:#141414;color:#fff;font-family:monospace;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.box{text-align:center;padding:40px}
+h1{font-size:20px;margin-bottom:12px;color:#f5d800}
+p{color:#888;font-size:13px;margin-bottom:28px}
+button{background:#e05c5c;color:#fff;border:none;padding:14px 32px;font-family:monospace;font-size:14px;border-radius:4px;cursor:pointer}
+button:hover{background:#c94040}
+.done{color:#6ddb96;font-size:14px;margin-top:20px;display:none}
+</style>
+</head><body>
+<div class="box">
+  <h1>Reset Identity</h1>
+  <p>Clears your stored name and player ID from this browser.<br>Your game stats are kept.</p>
+  <button onclick="doReset()">Reset this device</button>
+  <div class="done" id="done">Done — <a href="/" style="color:#6ddb96">go home</a></div>
+</div>
+<script>
+function doReset() {
+  localStorage.removeItem('bn_player');
+  document.cookie = 'bn_uid=; Path=/; Max-Age=0';
+  document.querySelector('button').style.display = 'none';
+  document.getElementById('done').style.display = 'block';
+}
+</script>
+</body></html>`;
+}
+
 // ── SERVER ──
 const server = http.createServer(async function(req, res) {
   var url = req.url.split('?')[0];
@@ -2709,6 +2740,7 @@ const server = http.createServer(async function(req, res) {
   else if (url==='/fastspell')             html=fastspellPage();
   else if (url==='/blindle')               html=blindlePage();
   else if (url==='/badges')               html=badgesPage();
+  else if (url==='/reset')                html=resetPage();
   else { res.writeHead(404,{'Content-Type':'text/html'}); res.end('<p style="font-family:sans-serif;padding:40px;color:#888">404 — Page not found</p>'); return; }
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});
   res.end(html);
