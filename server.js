@@ -2742,6 +2742,20 @@ const server = http.createServer(async function(req, res) {
   else if (url==='/blindle')               html=blindlePage();
   else if (url==='/badges')               html=badgesPage();
   else if (url==='/reset')                html=resetPage();
+  else if (url==='/setup') {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    if (!db) { res.writeHead(200); res.end('<pre>No DATABASE_URL configured.</pre>'); return; }
+    var log = [];
+    try {
+      await db.query(`CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, name TEXT, created_at TIMESTAMPTZ DEFAULT NOW(), last_seen TIMESTAMPTZ DEFAULT NOW())`);
+      log.push('OK: players table');
+      await db.query(`CREATE TABLE IF NOT EXISTS game_results (id SERIAL PRIMARY KEY, player_id TEXT NOT NULL REFERENCES players(id), game TEXT NOT NULL, played INT NOT NULL DEFAULT 0, wins INT NOT NULL DEFAULT 0, current_streak INT NOT NULL DEFAULT 0, max_streak INT NOT NULL DEFAULT 0, total_guesses_on_win INT NOT NULL DEFAULT 0, distribution JSONB, updated_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(player_id, game))`);
+      log.push('OK: game_results table');
+      log.push('All done!');
+    } catch(e) { log.push('ERROR: ' + e.message); }
+    res.writeHead(200); res.end('<pre style="font-family:monospace;padding:40px;background:#111;color:#6ddb96;font-size:14px">' + log.join('\n') + '</pre>');
+    return;
+  }
   else { res.writeHead(404,{'Content-Type':'text/html'}); res.end('<p style="font-family:sans-serif;padding:40px;color:#888">404 — Page not found</p>'); return; }
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});
   res.end(html);
