@@ -75,7 +75,7 @@ const FALLBACK_PW = ['aahed','aalii','abaci','aback','abaft','abase','abash','ab
 
 // ── FRENCH FALLBACK WORD LISTS ──
 // 200 common 5-letter French nouns/adjectives/verbs (base forms, no inflections)
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const BRAND = 'Brainiacs';
 const TAGLINE = '<span data-i18n="home.tagline">Train your brain. One day at a time.</span>';
 
