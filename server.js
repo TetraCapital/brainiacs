@@ -1,6 +1,77 @@
 const http = require('http');
 const fs_mod = require('fs');
 const path_mod = require('path');
+const crypto = require('crypto');
+
+// ── DATABASE (PostgreSQL via pg) ───────────────────────────────────────────
+// Set DATABASE_URL env var to enable. Falls back gracefully if not present.
+let db = null;
+(function initDB() {
+  if (!process.env.DATABASE_URL) {
+    console.log('[db] No DATABASE_URL — running in localStorage-only mode');
+    return;
+  }
+  try {
+    const { Pool } = require('pg');
+    db = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+    db.query(`
+      CREATE TABLE IF NOT EXISTS players (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_seen TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS game_results (
+        id SERIAL PRIMARY KEY,
+        player_id TEXT NOT NULL REFERENCES players(id),
+        game TEXT NOT NULL,
+        played INT NOT NULL DEFAULT 0,
+        wins INT NOT NULL DEFAULT 0,
+        current_streak INT NOT NULL DEFAULT 0,
+        max_streak INT NOT NULL DEFAULT 0,
+        total_guesses_on_win INT NOT NULL DEFAULT 0,
+        distribution JSONB,
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(player_id, game)
+      );
+    `).then(function() { console.log('[db] Schema ready'); })
+      .catch(function(e) { console.error('[db] Schema error:', e.message); });
+  } catch(e) {
+    console.log('[db] pg module not available:', e.message);
+    db = null;
+  }
+})();
+
+// ── COOKIE / UID HELPERS ───────────────────────────────────────────────────
+function parseCookies(req) {
+  var list = {}, rc = req.headers.cookie;
+  if (rc) rc.split(';').forEach(function(pair) {
+    var idx = pair.indexOf('=');
+    if (idx < 0) return;
+    list[pair.slice(0, idx).trim()] = decodeURIComponent(pair.slice(idx + 1).trim());
+  });
+  return list;
+}
+
+function getOrCreateUID(req, res) {
+  var cookies = parseCookies(req);
+  var uid = cookies['bn_uid'];
+  if (!uid) {
+    uid = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+    // Not HttpOnly so client JS can read it for "You" highlighting in rankings
+    res.setHeader('Set-Cookie', 'bn_uid=' + uid + '; Path=/; Max-Age=31536000; SameSite=Lax');
+  }
+  return uid;
+}
+
+function readJSON(req) {
+  return new Promise(function(resolve, reject) {
+    var body = '';
+    req.on('data', function(chunk) { body += chunk.toString(); if (body.length > 1e5) req.destroy(); });
+    req.on('end', function() { try { resolve(JSON.parse(body)); } catch(e) { reject(e); } });
+    req.on('error', reject);
+  });
+}
 
 // ── INFLECTION FILTER ──
 // Removes obvious plurals, 3rd-person -s/-es, and -ed past tenses from an answer pool.
@@ -507,7 +578,7 @@ const Player = (function() {
   return {
     getName: function() { var p = _get(); return p ? p.name : null; },
     getOrCreate: function() { var p = _get(); if (!p) { p = { id: Math.random().toString(36).slice(2), name: null }; _set(p); } return p; },
-    setName: function(n) { var p = this.getOrCreate(); p.name = n.trim(); _set(p); }
+    setName: function(n) { var p = this.getOrCreate(); p.name = n.trim(); _set(p); if(window.BnSync) BnSync.patchName(p.name); }
   };
 })();
 const GameStats = (function() {
@@ -530,7 +601,7 @@ const GameStats = (function() {
       var s = getStats(g); s.played++;
       if (won) { s.wins++; s.currentStreak++; s.maxStreak = Math.max(s.maxStreak, s.currentStreak); s.totalGuessesOnWin += guesses; var k = String(Math.min(guesses,6)); s.distribution[k] = (s.distribution[k]||0)+1; }
       else { s.currentStreak = 0; }
-      saveStats(g, s); _syncRank(g, s); return s;
+      saveStats(g, s); _syncRank(g, s); if(window.BnSync) BnSync.postState(g, s); return s;
     },
     getWinRate: function(s) { return (!s||s.played===0) ? 0 : Math.round(s.wins/s.played*100); },
     getAvgGuesses: function(s) { return (!s||s.wins===0) ? null : (s.totalGuessesOnWin/s.wins).toFixed(2); },
@@ -550,6 +621,51 @@ const GameStats = (function() {
     }
   };
 })();
+// ── SERVER SYNC ─────────────────────────────────────────────────────────────
+// Fire-and-forget sync to PostgreSQL via API routes.
+// Falls back silently if server has no DATABASE_URL configured.
+var BnSync = (function() {
+  function getBnUID() {
+    var m = document.cookie.match(/(?:^|;\\s*)bn_uid=([^;]+)/);
+    return m ? m[1] : null;
+  }
+  return {
+    uid: getBnUID,
+    postState: function(game, stats) {
+      try {
+        fetch('/api/state', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            game: game,
+            played: stats.played,
+            wins: stats.wins,
+            currentStreak: stats.currentStreak,
+            maxStreak: stats.maxStreak,
+            totalGuessesOnWin: stats.totalGuessesOnWin,
+            distribution: stats.distribution
+          })
+        }).catch(function() {});
+      } catch(e) {}
+    },
+    patchName: function(name) {
+      try {
+        fetch('/api/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name })
+        }).catch(function() {});
+      } catch(e) {}
+    },
+    fetchRankings: function(game, cb) {
+      fetch('/api/rankings?game=' + encodeURIComponent(game))
+        .then(function(r) { if (!r.ok) throw new Error('no db'); return r.json(); })
+        .then(cb)
+        .catch(function() { cb(GameStats.getSortedRankings(game)); });
+    }
+  };
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
   var btn = document.getElementById('playerBtn');
   var nameSpan = document.getElementById('playerName');
@@ -1167,27 +1283,34 @@ ${AD_TOP}${NAV('rankings')}
     <thead><tr><th>#</th><th><span data-i18n="rankings.player">Player</span></th><th><span data-i18n="rankings.played">Played</span></th><th><span data-i18n="rankings.winrate">Win %</span></th><th><span data-i18n="wordle.avgguesses">Avg Guesses</span></th><th><span data-i18n="wordle.maxstreak">Max Streak</span></th></tr></thead>
     <tbody id="tbody"><tr><td colspan="6" class="empty">No players yet — play a game first!</td></tr></tbody>
   </table></div>
-  <p class="note">Rankings are stored in your browser. In production these would sync to a shared server.</p>
+  <p class="note" id="rankNote">Loading global rankings…</p>
 </main>
 ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
 <script>
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function renderRankings(gameId) {
-  GameStats.refreshPlayerName(gameId);
-  var cur = Player.getOrCreate();
-  var rows = GameStats.getSortedRankings(gameId);
+  var note = document.getElementById('rankNote');
   var tbody = document.getElementById('tbody');
-  if (!rows.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">No players yet — play a game first!</td></tr>'; return; }
-  tbody.innerHTML = rows.map(function(e, i) {
-    var r=i+1, rc=r===1?'g':r===2?'s':r===3?'b':'';
-    var wp=e.played>0?Math.round(e.wins/e.played*100):0;
-    var ag=e.wins>0?(e.totalGuessesOnWin/e.wins).toFixed(2):'—';
-    var isYou=e.playerId===cur.id;
-    var init=(e.name||'?')[0].toUpperCase();
-    return '<tr><td><span class="rn '+rc+'">'+r+'</span></td>'+
-      '<td><div class="pc"><div class="av">'+init+'</div><span>'+esc(e.name||'Anonymous')+'</span>'+(isYou?'<span class="you">You</span>':'')+'</div></td>'+
-      '<td>'+e.played+'</td><td><span class="wp">'+wp+'%</span></td><td><span class="ag">'+ag+'</span></td><td>'+e.maxStreak+'</td></tr>';
-  }).join('');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
+  BnSync.fetchRankings(gameId, function(rows) {
+    var myUid = BnSync.uid();
+    var cur = Player.getOrCreate();
+    if (note) {
+      if (myUid) note.textContent = 'Real-time global rankings — updated after each game.';
+      else note.textContent = 'Rankings are stored in your browser (no database configured).';
+    }
+    if (!rows.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">No players yet — play a game first!</td></tr>'; return; }
+    tbody.innerHTML = rows.map(function(e, i) {
+      var r=i+1, rc=r===1?'g':r===2?'s':r===3?'b':'';
+      var wp=e.played>0?Math.round(e.wins/e.played*100):0;
+      var ag=e.wins>0?(e.totalGuessesOnWin/e.wins).toFixed(2):'—';
+      var isYou = myUid ? e.playerId===myUid : e.playerId===cur.id;
+      var init=(e.name||'?')[0].toUpperCase();
+      return '<tr><td><span class="rn '+rc+'">'+r+'</span></td>'+
+        '<td><div class="pc"><div class="av">'+init+'</div><span>'+esc(e.name||'Anonymous')+'</span>'+(isYou?'<span class="you">You</span>':'')+'</div></td>'+
+        '<td>'+e.played+'</td><td><span class="wp">'+wp+'%</span></td><td><span class="ag">'+ag+'</span></td><td>'+e.maxStreak+'</td></tr>';
+    }).join('');
+  });
 }
 // ── BADGE SYSTEM ──────────────────────────────────────────────────────────
 var BADGE_DEFS = [
@@ -2484,8 +2607,100 @@ document.addEventListener('DOMContentLoaded', function(){ renderBadges(); });
 }
 
 // ── SERVER ──
-const server = http.createServer(function(req, res) {
+const server = http.createServer(async function(req, res) {
   var url = req.url.split('?')[0];
+  var qs  = req.url.includes('?') ? req.url.slice(req.url.indexOf('?') + 1) : '';
+
+  // ── API ROUTES ──────────────────────────────────────────────────────────
+  if (url.startsWith('/api/')) {
+    var uid = getOrCreateUID(req, res);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    if (!db) {
+      res.writeHead(503);
+      res.end(JSON.stringify({ error: 'No database configured' }));
+      return;
+    }
+
+    try {
+      // POST /api/state — record / update game stats for this player
+      if (url === '/api/state' && req.method === 'POST') {
+        var body = await readJSON(req);
+        var game = (body.game||'').slice(0, 32);
+        if (!game) { res.writeHead(400); res.end(JSON.stringify({error:'missing game'})); return; }
+        await db.query(
+          'INSERT INTO players(id) VALUES($1) ON CONFLICT(id) DO UPDATE SET last_seen=NOW()',
+          [uid]
+        );
+        await db.query(
+          `INSERT INTO game_results(player_id,game,played,wins,current_streak,max_streak,total_guesses_on_win,distribution,updated_at)
+           VALUES($1,$2,$3,$4,$5,$6,$7,$8,NOW())
+           ON CONFLICT(player_id,game) DO UPDATE SET
+             played=$3, wins=$4, current_streak=$5, max_streak=$6,
+             total_guesses_on_win=$7, distribution=$8, updated_at=NOW()`,
+          [uid, game,
+           body.played||0, body.wins||0, body.currentStreak||0, body.maxStreak||0,
+           body.totalGuessesOnWin||0, JSON.stringify(body.distribution||{})]
+        );
+        res.writeHead(200); res.end(JSON.stringify({ ok: true }));
+        return;
+      }
+
+      // GET /api/state?game=wordle — fetch this player's stats
+      if (url === '/api/state' && req.method === 'GET') {
+        var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
+        var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : null;
+        if (!game) { res.writeHead(400); res.end(JSON.stringify({error:'missing game'})); return; }
+        var row = await db.query('SELECT * FROM game_results WHERE player_id=$1 AND game=$2', [uid, game]);
+        res.writeHead(200); res.end(JSON.stringify(row.rows[0] || null));
+        return;
+      }
+
+      // GET /api/rankings?game=wordle — global leaderboard
+      if (url === '/api/rankings' && req.method === 'GET') {
+        var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
+        var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : 'wordle';
+        var result = await db.query(
+          `SELECT gr.player_id AS "playerId", p.name, gr.played, gr.wins,
+                  gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak"
+           FROM game_results gr
+           JOIN players p ON p.id = gr.player_id
+           WHERE gr.game=$1 AND p.name IS NOT NULL AND gr.played > 0
+           ORDER BY
+             (CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC,
+             (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC,
+             gr.played DESC
+           LIMIT 100`,
+          [game]
+        );
+        res.writeHead(200); res.end(JSON.stringify(result.rows));
+        return;
+      }
+
+      // PATCH /api/me — set display name
+      if (url === '/api/me' && req.method === 'PATCH') {
+        var body = await readJSON(req);
+        var name = ((body.name||'') + '').trim().slice(0, 32);
+        if (!name) { res.writeHead(400); res.end(JSON.stringify({error:'invalid name'})); return; }
+        await db.query(
+          'INSERT INTO players(id,name) VALUES($1,$2) ON CONFLICT(id) DO UPDATE SET name=$2, last_seen=NOW()',
+          [uid, name]
+        );
+        res.writeHead(200); res.end(JSON.stringify({ ok: true }));
+        return;
+      }
+
+      res.writeHead(404); res.end(JSON.stringify({ error: 'not found' }));
+    } catch(e) {
+      console.error('[api] error:', e.message);
+      res.writeHead(500); res.end(JSON.stringify({ error: 'server error' }));
+    }
+    return;
+  }
+
+  // ── PAGE ROUTES ──────────────────────────────────────────────────────────
+  getOrCreateUID(req, res);  // ensure cookie is set on all page loads
   var html;
   if      (url==='/'||url==='/index.html') html=homePage();
   else if (url==='/rankings')              html=rankingsPage();
