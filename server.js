@@ -962,8 +962,12 @@ function homePage() {
 .home-body{max-width:1100px;margin:0 auto;padding:40px 24px 72px;flex:1;width:100%;display:flex;gap:40px;align-items:flex-start}
 .profile-panel{width:220px;flex-shrink:0;position:sticky;top:80px}
 .profile-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:16px}
-.profile-card-header{background:#f5d800;border-bottom:2px solid #c9a800;padding:11px 18px;display:flex;align-items:center;justify-content:center}
-.profile-card-header-text{font-family:var(--fm);font-size:16px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1a1400}
+.profile-card-header{background:#f5d800;border-bottom:2px solid #c9a800;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.profile-card-header-text{font-family:var(--fm);font-size:15px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1a1400}
+.profile-toggle{display:flex;gap:3px;background:rgba(0,0,0,.12);border-radius:4px;padding:2px}
+.ptog{background:transparent;border:none;color:#1a1400;font-family:var(--fm);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:3px;cursor:pointer;transition:background .15s,color .15s;opacity:.6}
+.ptog.active{background:#fff;opacity:1;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.ptog:hover:not(.active){opacity:.85}
 .profile-card-body{padding:20px 18px 22px}
 .profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldl));display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;box-shadow:0 0 20px rgba(201,168,76,.3)}
 .profile-name{font-family:var(--fd);font-size:16px;font-weight:700;text-align:center;margin-bottom:14px}
@@ -1017,11 +1021,16 @@ ${AD_TOP}${NAV('home')}
     <div class="profile-card">
       <div class="profile-card-header">
         <span class="profile-card-header-text">Your Brainiac</span>
+        <div class="profile-toggle">
+          <button class="ptog active" id="togStats">Stats</button>
+          <button class="ptog" id="togRank">Rank</button>
+        </div>
       </div>
       <div class="profile-card-body">
       <div class="profile-avatar" id="profileAvatar">🧠</div>
       <div class="profile-name" id="profileName">Anonymous</div>
       <hr class="profile-divider">
+      <div id="statsView">
       <div class="pstat-title">Success Rate</div>
       <div id="skillRadar">
         <div class="pstat-row">
@@ -1050,6 +1059,33 @@ ${AD_TOP}${NAV('home')}
         <div id="strengthList"></div>
         <div class="strength-label" style="color:#ff7070;margin-top:8px">🎯 To improve</div>
         <div id="weakList"></div>
+      </div>
+      </div>
+      <div id="rankView" style="display:none">
+        <div class="pstat-title" style="color:var(--gold)">Arena Rank</div>
+        <div id="rankRadar">
+          <div class="pstat-row">
+            <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span>Wordle</span>
+            <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-wordle" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
+            <span class="pstat-pct" id="rp-wordle">—</span>
+          </div>
+          <div class="pstat-row">
+            <span class="pstat-label"><span class="pstat-dot" style="background:#5b9cf6"></span>Pathle</span>
+            <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-pathle" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
+            <span class="pstat-pct" id="rp-pathle">—</span>
+          </div>
+          <div class="pstat-row">
+            <span class="pstat-label"><span class="pstat-dot" style="background:#f5a623"></span>FastSpell</span>
+            <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-fastspell" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
+            <span class="pstat-pct" id="rp-fastspell">—</span>
+          </div>
+          <div class="pstat-row">
+            <span class="pstat-label"><span class="pstat-dot" style="background:#a06bf5"></span>Blindle</span>
+            <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-blindle" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
+            <span class="pstat-pct" id="rp-blindle">—</span>
+          </div>
+        </div>
+        <div style="font-family:var(--fm);font-size:9px;color:var(--fg3);margin-top:10px;line-height:1.5">Full bar = 1st place</div>
       </div>
       </div>
     </div>
@@ -1190,7 +1226,7 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
     el.addEventListener('mouseleave',function(){updateHover(-1);});
   });
 
-  // Profile stats
+  // Profile stats + toggle
   document.addEventListener('DOMContentLoaded', function(){
     var nm=Player.getName();
     if(nm){document.getElementById('profileName').textContent=nm;document.getElementById('profileAvatar').textContent=nm[0].toUpperCase();}
@@ -1220,6 +1256,40 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
         }
       }
     },80);
+
+    // Toggle Stats / Rank
+    var togStats=document.getElementById('togStats');
+    var togRank=document.getElementById('togRank');
+    var statsView=document.getElementById('statsView');
+    var rankView=document.getElementById('rankView');
+    var rankLoaded=false;
+    function showStats(){statsView.style.display='';rankView.style.display='none';togStats.classList.add('active');togRank.classList.remove('active');}
+    function showRank(){statsView.style.display='none';rankView.style.display='';togStats.classList.remove('active');togRank.classList.add('active');if(!rankLoaded){rankLoaded=true;loadRankings();}}
+    togStats.addEventListener('click',showStats);
+    togRank.addEventListener('click',showRank);
+
+    function loadRankings(){
+      var myUid=BnSync.uid();
+      games.forEach(function(g){
+        fetch('/api/rankings?game='+g.id)
+          .then(function(r){return r.ok?r.json():[];})
+          .then(function(rows){
+            var bar=document.getElementById('rb-'+g.id);
+            var lbl=document.getElementById('rp-'+g.id);
+            if(!bar||!lbl)return;
+            var idx=rows.findIndex(function(r){return r.playerId===myUid;});
+            if(idx===-1||!myUid){lbl.textContent='—';return;}
+            var rank=idx+1, N=rows.length;
+            // fill: 100% = 1st, approaches 0% as rank→last
+            var fill=Math.round((1-(rank-1)/Math.max(1,N))*100);
+            var topPct=Math.ceil(rank/N*100);
+            bar.style.width=fill+'%';
+            lbl.textContent='T'+topPct+'%';
+            lbl.title='Rank '+rank+' of '+N+' players';
+          })
+          .catch(function(){});
+      });
+    }
   });
 
   build();
