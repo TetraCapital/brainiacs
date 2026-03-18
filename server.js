@@ -148,7 +148,7 @@ const FALLBACK_PW = ['aahed','aalii','abaci','aback','abaft','abase','abash','ab
 // ── FRENCH FALLBACK WORD LISTS ──
 // 200 common 5-letter French nouns/adjectives/verbs (base forms, no inflections)
 const PORT = process.env.PORT || 3000;
-const BRAND = 'Brainiacs';
+const BRAND = 'Brainiacle';
 const TAGLINE = '<span data-i18n="home.tagline">Train your brain. One day at a time.</span>';
 
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -405,7 +405,7 @@ const I18N = `<script>
       'badgecat.First Steps': 'First Steps', 'badgecat.Victories': 'Victories',
       'badgecat.FastSpell': 'FastSpell', 'badgecat.Dedication': 'Dedication',
       // Friend modal
-      'friend.title': 'Invite a Friend', 'friend.subtitle': '<span data-i18n="friend.subtitle">Share Brainiacs with someone — challenge them on the same daily words!</span>',
+      'friend.title': 'Invite a Friend', 'friend.subtitle': '<span data-i18n="friend.subtitle">Share Brainiacle with someone — challenge them on the same daily words!</span>',
       'friend.copy': 'Copy', 'friend.copied': '✓ Copied!', 'friend.sharedirectly': 'Share directly',
       'friend.close': 'Close', 'friend.wa': 'WhatsApp', 'friend.wa.desc': 'Send a message',
       'friend.email': 'Email', 'friend.email.desc': 'Send an invite',
@@ -413,8 +413,8 @@ const I18N = `<script>
       'friend.sms': 'SMS / iMessage', 'friend.sms.desc': 'Text a friend',
       'friend.twitter': 'X / Twitter', 'friend.twitter.desc': 'Post to your followers',
       // Share text
-      'share.msg': 'Play Brainiacs with me — daily word puzzles! ',
-      'share.emailsubject': 'Play Brainiacs with me!',
+      'share.msg': 'Play Brainiacle with me — daily word puzzles! ',
+      'share.emailsubject': 'Play Brainiacle with me!',
       // Common
       'common.close': 'Close', 'common.copied': 'Copied!', 'common.cannotcopy': 'Could not copy',
       'home.wordle.desc': 'Crack the 5-letter word in 6 tries.<br>Vocabulary &amp; deduction.',
@@ -525,7 +525,7 @@ const I18N = `<script>
       'badgecat.First Steps': 'Premiers Pas', 'badgecat.Victories': 'Victoires',
       'badgecat.FastSpell': 'FastSpell', 'badgecat.Dedication': 'Dévouement',
       // Friend modal
-      'friend.title': 'Inviter un Ami', 'friend.subtitle': 'Partagez Brainiacs — défiez-vous sur les mêmes mots !',
+      'friend.title': 'Inviter un Ami', 'friend.subtitle': 'Partagez Brainiacle — défiez-vous sur les mêmes mots !',
       'friend.copy': 'Copier', 'friend.copied': '✓ Copié !', 'friend.sharedirectly': 'Partager directement',
       'friend.close': 'Fermer', 'friend.wa': 'WhatsApp', 'friend.wa.desc': 'Envoyer un message',
       'friend.email': 'E-mail', 'friend.email.desc': 'Envoyer une invitation',
@@ -533,8 +533,8 @@ const I18N = `<script>
       'friend.sms': 'SMS / iMessage', 'friend.sms.desc': 'Envoyer par SMS',
       'friend.twitter': 'X / Twitter', 'friend.twitter.desc': 'Publier sur votre fil',
       // Share text
-      'share.msg': 'Joue à Brainiacs avec moi — des mots à deviner chaque jour ! ',
-      'share.emailsubject': 'Joue à Brainiacs avec moi !',
+      'share.msg': 'Joue à Brainiacle avec moi — des mots à deviner chaque jour ! ',
+      'share.emailsubject': 'Joue à Brainiacle avec moi !',
       // Common
       'common.close': 'Fermer', 'common.copied': 'Copié !', 'common.cannotcopy': 'Impossible de copier',
       'home.wordle.desc': 'Devinez le mot en 6 essais.<br>Vocabulaire &amp; déduction.',
@@ -812,7 +812,7 @@ const FRIEND_MODAL = `
 <div class="invite-modal" id="inviteModal">
   <div class="invite-box">
     <div class="invite-title">👥 <span data-i18n="friend.title">Invite a Friend</span></div>
-    <div class="invite-sub">Share Brainiacs with someone — challenge them on the same daily words!</div>
+    <div class="invite-sub">Share Brainiacle with someone — challenge them on the same daily words!</div>
     <div class="invite-link-row">
       <input class="invite-link-input" id="inviteLinkInput" readonly value="https://brainiacs.app" />
       <button class="invite-copy-btn" id="inviteCopyBtn" onclick="copyInviteLink()"><span data-i18n="friend.copy">Copy</span></button>
@@ -850,11 +850,11 @@ const FRIEND_MODAL = `
   }
   window.openInviteModal = function(){
     var url = getInviteUrl();
-    var msg = 'Play Brainiacs with me — daily word puzzles! ' + url;
+    var msg = 'Play Brainiacle with me — daily word puzzles! ' + url;
     document.getElementById('inviteLinkInput').value = url;
     document.getElementById('waShareBtn').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
-    document.getElementById('emailShareBtn').href = 'mailto:?subject=' + encodeURIComponent('Play Brainiacs with me!') + '&body=' + encodeURIComponent(msg);
-    document.getElementById('tgShareBtn').href = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent('Play Brainiacs with me — daily word puzzles!');
+    document.getElementById('emailShareBtn').href = 'mailto:?subject=' + encodeURIComponent('Play Brainiacle with me!') + '&body=' + encodeURIComponent(msg);
+    document.getElementById('tgShareBtn').href = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent('Play Brainiacle with me — daily word puzzles!');
     document.getElementById('smsShareBtn').href = 'sms:?body=' + encodeURIComponent(msg);
     document.getElementById('twitterShareBtn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(msg);
     document.getElementById('inviteModal').classList.add('open');
@@ -2841,5 +2841,5 @@ const server = http.createServer(async function(req, res) {
 });
 
 server.listen(PORT, function(){
-  console.log('\n  🧠 Brainiacs running at http://localhost:'+PORT+'\n');
+  console.log('\n  🧠 Brainiacle running at http://localhost:'+PORT+'\n');
 });
