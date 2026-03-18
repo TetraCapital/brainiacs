@@ -2783,16 +2783,16 @@ const server = http.createServer(async function(req, res) {
       if (url === '/api/rankings' && req.method === 'GET') {
         var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
         var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : 'wordle';
+        var fsFormula = "ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1)";
         var orderBy = game === 'fastspell'
-          ? 'avg_pts_per_day DESC, gr.played DESC'
+          ? fsFormula + ' DESC, gr.played DESC'
           : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
         var result = await db.query(
           `SELECT gr.player_id AS "playerId", p.name, gr.played, gr.wins,
                   gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak",
-                  ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1) AS "avgPtsPerDay"
+                  ${fsFormula} AS "avgPtsPerDay"
            FROM game_results gr
            JOIN players p ON p.id = gr.player_id
-           CROSS JOIN LATERAL (SELECT ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1) AS avg_pts_per_day) _avg
            WHERE gr.game=$1 AND p.name IS NOT NULL AND gr.played > 0
            ORDER BY ${orderBy}
            LIMIT 100`,
@@ -2808,14 +2808,14 @@ const server = http.createServer(async function(req, res) {
         var out = {};
         for (var gi = 0; gi < gameList.length; gi++) {
           var gname = gameList[gi];
+          var gFsFormula = "ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1)";
           var gOrderBy = gname === 'fastspell'
-            ? 'avg_pts_per_day DESC, gr.played DESC'
+            ? gFsFormula + ' DESC, gr.played DESC'
             : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
           var gResult = await db.query(
             `SELECT gr.player_id
              FROM game_results gr
              JOIN players p ON p.id = gr.player_id
-             CROSS JOIN LATERAL (SELECT ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1) AS avg_pts_per_day) _avg
              WHERE gr.game=$1 AND p.name IS NOT NULL AND gr.played > 0
              ORDER BY ${gOrderBy}`,
             [gname]
