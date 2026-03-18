@@ -2783,7 +2783,7 @@ const server = http.createServer(async function(req, res) {
       if (url === '/api/rankings' && req.method === 'GET') {
         var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
         var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : 'wordle';
-        var fsFormula = "ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1)";
+        var fsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)))::numeric, 1)";
         var orderBy = game === 'fastspell'
           ? fsFormula + ' DESC, gr.played DESC'
           : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
@@ -2808,7 +2808,7 @@ const server = http.createServer(async function(req, res) {
         var out = {};
         for (var gi = 0; gi < gameList.length; gi++) {
           var gname = gameList[gi];
-          var gFsFormula = "ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1)";
+          var gFsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)))::numeric, 1)";
           var gOrderBy = gname === 'fastspell'
             ? gFsFormula + ' DESC, gr.played DESC'
             : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
