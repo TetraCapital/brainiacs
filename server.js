@@ -679,6 +679,15 @@ document.addEventListener('DOMContentLoaded', function() {
   if (input) input.addEventListener('keydown', function(e){ if(e.key==='Enter')save&&save.click(); });
   if (modal) modal.addEventListener('click', function(e){ if(e.target===modal)modal.classList.remove('open'); });
   Player.getOrCreate(); refresh();
+  // Auto-sync name + stats to DB on every page load (fire-and-forget, idempotent)
+  if (!DEV_MODE) {
+    var _nm = Player.getName();
+    if (_nm) BnSync.patchName(_nm);
+    ['wordle','pathle','fastspell','blindle'].forEach(function(_g) {
+      var _s = GameStats.getStats(_g);
+      if (_s.played > 0) BnSync.postState(_g, _s);
+    });
+  }
   if(DEV_MODE) {
     var b = document.createElement('div');
     b.style.cssText='position:fixed;bottom:12px;right:12px;background:#e05c5c;color:#fff;font-family:monospace;font-size:10px;padding:4px 8px;border-radius:4px;z-index:9999;opacity:.8;pointer-events:none';
@@ -2708,6 +2717,8 @@ button:hover{background:#c94040}
 </div>
 <script>
 function doReset() {
+  // Tell server to wipe this player's DB entry before clearing the cookie
+  fetch('/api/me/delete', { method: 'POST' }).catch(function(){});
   localStorage.removeItem('bn_player');
   document.cookie = 'bn_uid=; Path=/; Max-Age=0';
   document.querySelector('button').style.display = 'none';
@@ -2813,6 +2824,14 @@ const server = http.createServer(async function(req, res) {
           out[gname] = gIdx >= 0 ? { rank: gIdx + 1, total: gResult.rows.length } : null;
         }
         res.writeHead(200); res.end(JSON.stringify(out));
+        return;
+      }
+
+      // POST /api/me/delete — wipe this player's data from DB (used by /reset page)
+      if (url === '/api/me/delete' && req.method === 'POST') {
+        await db.query('DELETE FROM game_results WHERE player_id=$1', [uid]);
+        await db.query('DELETE FROM players WHERE id=$1', [uid]);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true }));
         return;
       }
 
