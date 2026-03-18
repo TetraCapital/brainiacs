@@ -1268,17 +1268,17 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
     togRank.addEventListener('click',showRank);
 
     function loadRankings(){
-      var myUid=BnSync.uid();
-      games.forEach(function(g){
-        fetch('/api/rankings?game='+g.id)
-          .then(function(r){return r.ok?r.json():[];})
-          .then(function(rows){
+      fetch('/api/myranks')
+        .then(function(r){return r.ok?r.json():null;})
+        .then(function(data){
+          if(!data)return;
+          games.forEach(function(g){
             var bar=document.getElementById('rb-'+g.id);
             var lbl=document.getElementById('rp-'+g.id);
             if(!bar||!lbl)return;
-            var idx=rows.findIndex(function(r){return r.playerId===myUid;});
-            if(idx===-1||!myUid){lbl.textContent='—';return;}
-            var rank=idx+1, N=rows.length;
+            var info=data[g.id];
+            if(!info){lbl.textContent='—';return;}
+            var rank=info.rank, N=info.total;
             var fill=Math.round((1-(rank-1)/Math.max(1,N))*100);
             var suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
             var topPct=rank/N*100;
@@ -1287,9 +1287,9 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
             bar.style.width=fill+'%';
             lbl.textContent=rank+suffix;
             lbl.title='Rank '+rank+' of '+N+' players';
-          })
-          .catch(function(){});
-      });
+          });
+        })
+        .catch(function(){});
     }
   });
 
@@ -2788,6 +2788,31 @@ const server = http.createServer(async function(req, res) {
           [game]
         );
         res.writeHead(200); res.end(JSON.stringify(result.rows));
+        return;
+      }
+
+      // GET /api/myranks — get this player's rank in every game (server-side match, no JS cookie parsing)
+      if (url === '/api/myranks' && req.method === 'GET') {
+        var gameList = ['wordle','pathle','fastspell','blindle'];
+        var out = {};
+        for (var gi = 0; gi < gameList.length; gi++) {
+          var gname = gameList[gi];
+          var gOrderBy = gname === 'fastspell'
+            ? 'avg_pts_per_day DESC, gr.played DESC'
+            : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
+          var gResult = await db.query(
+            `SELECT gr.player_id
+             FROM game_results gr
+             JOIN players p ON p.id = gr.player_id
+             CROSS JOIN LATERAL (SELECT ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1) AS avg_pts_per_day) _avg
+             WHERE gr.game=$1 AND p.name IS NOT NULL AND gr.played > 0
+             ORDER BY ${gOrderBy}`,
+            [gname]
+          );
+          var gIdx = gResult.rows.findIndex(function(r){ return r.player_id === uid; });
+          out[gname] = gIdx >= 0 ? { rank: gIdx + 1, total: gResult.rows.length } : null;
+        }
+        res.writeHead(200); res.end(JSON.stringify(out));
         return;
       }
 
