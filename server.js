@@ -1366,8 +1366,8 @@ function renderRankings(gameId) {
   var thMetric = document.getElementById('th-metric');
   var thSub = document.getElementById('th-sub');
   var isFS = gameId === 'fastspell';
-  if (thMetric) thMetric.textContent = isFS ? 'Total Pts' : 'Win %';
-  if (thSub) thSub.textContent = isFS ? '' : 'Avg Guesses';
+  if (thMetric) thMetric.textContent = isFS ? 'Avg Pts/Day' : 'Win %';
+  if (thSub) thSub.textContent = isFS ? 'Total Pts' : 'Avg Guesses';
   tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
   BnSync.fetchRankings(gameId, function(rows) {
     var myUid = BnSync.uid();
@@ -1381,8 +1381,8 @@ function renderRankings(gameId) {
       var r=i+1, rc=r===1?'g':r===2?'s':r===3?'b':'';
       var isYou = myUid ? e.playerId===myUid : e.playerId===cur.id;
       var init=(e.name||'?')[0].toUpperCase();
-      var metric = isFS ? '<span class="ag">'+e.totalGuessesOnWin+'</span>' : '<span class="wp">'+(e.played>0?Math.round(e.wins/e.played*100):0)+'%</span>';
-      var sub = isFS ? '' : '<span class="ag">'+(e.wins>0?(e.totalGuessesOnWin/e.wins).toFixed(2):'—')+'</span>';
+      var metric = isFS ? '<span class="ag">'+(e.avgPtsPerDay||0)+'</span>' : '<span class="wp">'+(e.played>0?Math.round(e.wins/e.played*100):0)+'%</span>';
+      var sub = isFS ? '<span class="ag">'+e.totalGuessesOnWin+'</span>' : '<span class="ag">'+(e.wins>0?(e.totalGuessesOnWin/e.wins).toFixed(2):'—')+'</span>';
       return '<tr><td><span class="rn '+rc+'">'+r+'</span></td>'+
         '<td><div class="pc"><div class="av">'+init+'</div><span>'+esc(e.name||'Anonymous')+'</span>'+(isYou?'<span class="you">You</span>':'')+'</div></td>'+
         '<td>'+e.played+'</td><td>'+metric+'</td><td>'+sub+'</td><td>'+e.maxStreak+'</td></tr>';
@@ -2773,13 +2773,15 @@ const server = http.createServer(async function(req, res) {
         var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
         var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : 'wordle';
         var orderBy = game === 'fastspell'
-          ? 'gr.total_guesses_on_win DESC, gr.played DESC'
+          ? 'avg_pts_per_day DESC, gr.played DESC'
           : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
         var result = await db.query(
           `SELECT gr.player_id AS "playerId", p.name, gr.played, gr.wins,
-                  gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak"
+                  gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak",
+                  ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1) AS "avgPtsPerDay"
            FROM game_results gr
            JOIN players p ON p.id = gr.player_id
+           CROSS JOIN LATERAL (SELECT ROUND(gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)), 1) AS avg_pts_per_day) _avg
            WHERE gr.game=$1 AND p.name IS NOT NULL AND gr.played > 0
            ORDER BY ${orderBy}
            LIMIT 100`,
