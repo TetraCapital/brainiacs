@@ -1824,38 +1824,58 @@ function bfsPath(start,end,wordSet){
   return null;
 }
 
-// Daily puzzle pairs — all have Levenshtein distance ≥ 4 between start and end
+// Daily puzzle pairs — Levenshtein distance 3–4 (1–2 shared letters), par 4–5
 var PUZZLES=[
-  {from:'black',to:'white',par:6},
-  {from:'start',to:'cloud',par:6},
-  {from:'stone',to:'bring',par:6},
-  {from:'flame',to:'grind',par:6},
-  {from:'brave',to:'shout',par:6},
-  {from:'shore',to:'blunt',par:6},
-  {from:'dance',to:'shirt',par:6},
-  {from:'tooth',to:'crane',par:6},
-  {from:'globe',to:'tramp',par:6},
-  {from:'steam',to:'plunk',par:6},
-  {from:'storm',to:'blaze',par:6},
-  {from:'thick',to:'novel',par:6},
-  {from:'crush',to:'flint',par:6},
-  {from:'giant',to:'broke',par:6},
-  {from:'light',to:'crumb',par:6},
-  {from:'cliff',to:'manor',par:6},
-  {from:'crime',to:'blunt',par:6},
-  {from:'plank',to:'stove',par:6},
-  {from:'birth',to:'swamp',par:6},
-  {from:'frost',to:'climb',par:6},
-  {from:'drove',to:'sting',par:6},
-  {from:'bench',to:'floor',par:6},
-  {from:'tiger',to:'cloud',par:6},
-  {from:'plant',to:'world',par:6},
-  {from:'speak',to:'might',par:6},
-  {from:'choir',to:'stunk',par:6},
-  {from:'blaze',to:'thorn',par:6},
-  {from:'groan',to:'swift',par:6},
-  {from:'witch',to:'stale',par:6},
-  {from:'notch',to:'gripe',par:6}
+  {from:'bread',to:'press',par:4},
+  {from:'storm',to:'phone',par:4},
+  {from:'plant',to:'brain',par:4},
+  {from:'steam',to:'spend',par:4},
+  {from:'place',to:'crane',par:4},
+  {from:'place',to:'flame',par:4},
+  {from:'flame',to:'grace',par:4},
+  {from:'fresh',to:'truth',par:4},
+  {from:'chair',to:'shake',par:4},
+  {from:'dream',to:'tried',par:4},
+  {from:'dream',to:'wreck',par:4},
+  {from:'grace',to:'prize',par:4},
+  {from:'horse',to:'price',par:4},
+  {from:'house',to:'pride',par:4},
+  {from:'mount',to:'point',par:4},
+  {from:'plain',to:'stand',par:4},
+  {from:'blade',to:'peace',par:4},
+  {from:'bread',to:'sleep',par:4},
+  {from:'house',to:'price',par:4},
+  {from:'frost',to:'phone',par:4},
+  {from:'stone',to:'plant',par:5},
+  {from:'stone',to:'black',par:5},
+  {from:'storm',to:'black',par:5},
+  {from:'storm',to:'plate',par:5},
+  {from:'plant',to:'blood',par:5},
+  {from:'brain',to:'blood',par:5},
+  {from:'steam',to:'skill',par:5},
+  {from:'blood',to:'cloud',par:5},
+  {from:'blade',to:'price',par:5},
+  {from:'fresh',to:'press',par:5},
+  {from:'fresh',to:'trash',par:5},
+  {from:'chair',to:'scale',par:5},
+  {from:'dream',to:'press',par:5},
+  {from:'frost',to:'peace',par:5},
+  {from:'heart',to:'peace',par:5},
+  {from:'heart',to:'plane',par:5},
+  {from:'horse',to:'north',par:5},
+  {from:'horse',to:'point',par:5},
+  {from:'mount',to:'paint',par:5},
+  {from:'mount',to:'print',par:5},
+  {from:'mouse',to:'pride',par:5},
+  {from:'mouse',to:'range',par:5},
+  {from:'north',to:'torch',par:5},
+  {from:'north',to:'waste',par:5},
+  {from:'paint',to:'plane',par:5},
+  {from:'paint',to:'pride',par:5},
+  {from:'plain',to:'sting',par:5},
+  {from:'plain',to:'track',par:5},
+  {from:'bread',to:'sweet',par:5},
+  {from:'crane',to:'flame',par:5}
 ];
 // 4-letter puzzles — Levenshtein distance = 4 (all letters different)
 var PUZZLES4=[
@@ -2783,7 +2803,7 @@ const server = http.createServer(async function(req, res) {
       if (url === '/api/rankings' && req.method === 'GET') {
         var gameParam = qs.split('&').find(function(p){return p.startsWith('game=');});
         var game = gameParam ? decodeURIComponent(gameParam.split('=')[1]) : 'wordle';
-        var fsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)))::numeric, 1)";
+        var fsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, CURRENT_DATE - p.created_at::date))::numeric, 1)";
         var orderBy = game === 'fastspell'
           ? fsFormula + ' DESC, gr.played DESC'
           : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
@@ -2808,7 +2828,7 @@ const server = http.createServer(async function(req, res) {
         var out = {};
         for (var gi = 0; gi < gameList.length; gi++) {
           var gname = gameList[gi];
-          var gFsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, FLOOR(EXTRACT(EPOCH FROM (NOW() - p.created_at)) / 86400)))::numeric, 1)";
+          var gFsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, CURRENT_DATE - p.created_at::date))::numeric, 1)";
           var gOrderBy = gname === 'fastspell'
             ? gFsFormula + ' DESC, gr.played DESC'
             : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
