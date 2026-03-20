@@ -421,6 +421,31 @@ const I18N = `<script>
       'home.pathle.desc': 'Transform one word into another, one letter at a time.<br>Logic &amp; vocabulary.',
       'home.fs.desc': 'Build words from 7 letters. The centre letter is mandatory.',
       'home.blindle.desc': 'Guess the word in 9 tries — but you only see counts.<br>Deduction without hints.',
+      'home.pickgame': 'Pick a game',
+      // Wordle result & modal
+      'wordle.result.win': '🎉 Brilliant!', 'wordle.result.lose': '😔 Better luck next time',
+      'wordle.thewordwas': 'The word was: ', 'wordle.guessdist': 'Guess Distribution',
+      'wordle.intro': 'Guess the hidden 5-letter word in <strong style="color:var(--fg)">6 tries</strong>. New word every day.',
+      'wordle.rule.enter': 'Hit <strong style="color:var(--fg)">Enter</strong> to submit.',
+      'wordle.hint.correct': '<strong>W</strong> is in the correct spot. 🟩',
+      'wordle.hint.present': '<strong>I</strong> is in the word, wrong spot. 🟨',
+      'wordle.hint.absent': '<strong>U</strong> is not in the word. ⬛',
+      // Pathle result
+      'pathle.result.win': '🎉 Path found!', 'pathle.result.lose': '😔 Path not found',
+      'pathle.thepathread': 'The path was: ', 'pathle.oneletter': '✓ One letter changed',
+      'pathle.toomany': '⚠ Too many changes', 'pathle.partext': 'Par: ', 'pathle.steptext': ' step',
+      // Blindle modal & result
+      'blindle.howtoplay': 'How to Play Blindle',
+      'blindle.intro': 'Guess the 5-letter word in <b>9 tries</b>.<br><br>After each guess, you see <b>3 counters</b> instead of coloured tiles:',
+      'blindle.hint.green': '<b style="color:#4a9e6e">Green</b> = letters in the right position',
+      'blindle.hint.yellow': '<b style="color:#c49a28">Yellow</b> = letters in the word but wrong position',
+      'blindle.hint.red': '<b style="color:#e05c5c">Red</b> = letters not in the word at all',
+      'blindle.hint.explain': 'You must figure out <b>which letters</b> are correct, misplaced, or missing — with no position hints!',
+      'blindle.gotit': 'Got it!',
+      'blindle.result.win': '🎉 Brilliant!', 'blindle.result.lose': '😔 Better luck next time',
+      'blindle.thewordwas': 'The word was: ',
+      // FastSpell result
+      'fs.ptscored': 'points scored', 'fs.copied': 'Copied!',
     },
 
     fr: {
@@ -541,6 +566,31 @@ const I18N = `<script>
       'home.pathle.desc': 'Transformez un mot en un autre, une lettre à la fois.',
       'home.fs.desc': 'Formez des mots avec 7 lettres. La lettre centrale est obligatoire.',
       'home.blindle.desc': 'Devinez le mot en 9 essais — seulement les comptes.',
+      'home.pickgame': 'Choisir un jeu',
+      // Wordle result & modal
+      'wordle.result.win': '🎉 Brillant !', 'wordle.result.lose': '😔 Meilleure chance la prochaine fois',
+      'wordle.thewordwas': 'Le mot était : ', 'wordle.guessdist': 'Distribution des essais',
+      'wordle.intro': 'Devinez le mot caché de 5 lettres en <strong style="color:var(--fg)">6 essais</strong>. Nouveau mot chaque jour.',
+      'wordle.rule.enter': 'Appuyez sur <strong style="color:var(--fg)">Entrée</strong> pour valider.',
+      'wordle.hint.correct': '<strong>W</strong> est à la bonne position. 🟩',
+      'wordle.hint.present': '<strong>I</strong> est dans le mot, mauvaise position. 🟨',
+      'wordle.hint.absent': "<strong>U</strong> n'est pas dans le mot. ⬛",
+      // Pathle result
+      'pathle.result.win': '🎉 Chemin trouvé !', 'pathle.result.lose': '😔 Chemin introuvable',
+      'pathle.thepathread': 'Le chemin : ', 'pathle.oneletter': '✓ Une lettre changée',
+      'pathle.toomany': '⚠ Trop de changements', 'pathle.partext': 'Référence : ', 'pathle.steptext': ' étape',
+      // Blindle modal & result
+      'blindle.howtoplay': 'Comment jouer à Blindle',
+      'blindle.intro': 'Devinez le mot de 5 lettres en <b>9 essais</b>.<br><br>Après chaque essai, vous voyez <b>3 compteurs</b> au lieu des cases colorées :',
+      'blindle.hint.green': '<b style="color:#4a9e6e">Vert</b> = lettres à la bonne position',
+      'blindle.hint.yellow': '<b style="color:#c49a28">Jaune</b> = lettres dans le mot mais mauvaise position',
+      'blindle.hint.red': '<b style="color:#e05c5c">Rouge</b> = lettres absentes du mot',
+      'blindle.hint.explain': 'Vous devez déduire <b>quelles lettres</b> sont correctes, mal placées ou absentes — sans indices de position !',
+      'blindle.gotit': 'Compris !',
+      'blindle.result.win': '🎉 Brillant !', 'blindle.result.lose': '😔 Meilleure chance la prochaine fois',
+      'blindle.thewordwas': 'Le mot était : ',
+      // FastSpell result
+      'fs.ptscored': 'points marqués', 'fs.copied': 'Copié !',
     }
 
 
@@ -1107,7 +1157,7 @@ ${AD_TOP}${NAV('home')}
         <svg class="pie-svg" id="pieSvg" width="280" height="280" viewBox="-10 -10 220 220"></svg>
         <div class="pie-center">
           <div class="pie-center__icon" id="pieCenterIcon">🧠</div>
-          <div class="pie-center__label" id="pieCenterLabel">Pick a game</div>
+          <div class="pie-center__label" id="pieCenterLabel" data-i18n="home.pickgame">Pick a game</div>
         </div>
       </div>
       <div class="game-legend" id="gameLegend">
@@ -1213,7 +1263,7 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
     });
     var ci=document.getElementById('pieCenterIcon'), cl=document.getElementById('pieCenterLabel');
     if(i>=0){ci.textContent=GAMES[i].icon;cl.textContent=GAMES[i].desc;cl.style.color=GAMES[i].color;}
-    else{ci.textContent='🧠';cl.textContent='Pick a game';cl.style.color='';}
+    else{ci.textContent='🧠';cl.textContent=(_T&&_T['home.pickgame'])||'Pick a game';cl.style.color='';}
   }
 
   // Event delegation on SVG — fires reliably even when attributes change
@@ -1631,13 +1681,13 @@ ${AD_BOT}${FOOTER}
   <div class="modal">
     <div class="modal__close" id="helpClose">×</div>
     <h2><span data-i18n="wordle.howtoplay">How to Play</span></h2>
-    <p>Guess the hidden 5-letter word in <strong style="color:var(--fg)">6 tries</strong>. New word every day.</p>
-    <ul class="hl"><li>Each guess must be a valid 5-letter word.</li><li>Hit <strong style="color:var(--fg)">Enter</strong> to submit.</li><li>Tile colours show how close you are.</li></ul>
+    <p data-i18n="wordle.intro">Guess the hidden 5-letter word in <strong style="color:var(--fg)">6 tries</strong>. New word every day.</p>
+    <ul class="hl"><li data-i18n="wordle.rule1">Each guess must be a valid 5-letter word.</li><li data-i18n="wordle.rule.enter">Hit <strong style="color:var(--fg)">Enter</strong> to submit.</li><li data-i18n="wordle.rule2">Tile colours show how close you are.</li></ul>
     <hr class="hd"/>
     <div class="hex">
-      <div class="he"><div class="ht"><div class="htile c">W</div><div class="htile">E</div><div class="htile">A</div><div class="htile">R</div><div class="htile">Y</div></div><p><strong>W</strong> is in the correct spot. 🟩</p></div>
-      <div class="he"><div class="ht"><div class="htile">P</div><div class="htile p">I</div><div class="htile">L</div><div class="htile">L</div><div class="htile">S</div></div><p><strong>I</strong> is in the word, wrong spot. 🟨</p></div>
-      <div class="he"><div class="ht"><div class="htile">V</div><div class="htile">A</div><div class="htile">G</div><div class="htile a">U</div><div class="htile">E</div></div><p><strong>U</strong> is not in the word. ⬛</p></div>
+      <div class="he"><div class="ht"><div class="htile c">W</div><div class="htile">E</div><div class="htile">A</div><div class="htile">R</div><div class="htile">Y</div></div><p data-i18n="wordle.hint.correct"><strong>W</strong> is in the correct spot. 🟩</p></div>
+      <div class="he"><div class="ht"><div class="htile">P</div><div class="htile p">I</div><div class="htile">L</div><div class="htile">L</div><div class="htile">S</div></div><p data-i18n="wordle.hint.present"><strong>I</strong> is in the word, wrong spot. 🟨</p></div>
+      <div class="he"><div class="ht"><div class="htile">V</div><div class="htile">A</div><div class="htile">G</div><div class="htile a">U</div><div class="htile">E</div></div><p data-i18n="wordle.hint.absent"><strong>U</strong> is not in the word. ⬛</p></div>
     </div>
   </div>
 </div>
@@ -1671,10 +1721,10 @@ function shake(ri){var r=rowEl(ri);r.classList.remove('shake');void r.offsetWidt
 function bounce(ri){for(var c=0;c<LEN;c++){(function(col){setTimeout(function(){tile(ri,col).classList.add('bounce');},col*80);})(c);}}
 function colorKeys(guess,res){var ORDER={correct:3,present:2,absent:1};for(var c=0;c<LEN;c++){var l=guess[c].toLowerCase();var btn=document.querySelector('.key[data-k="'+l+'"]');if(!btn)continue;var cur=btn.dataset.state||'';if((ORDER[res[c]]||0)>(ORDER[cur]||0)){btn.classList.remove('kc','kp','ka');btn.classList.add(res[c]==='correct'?'kc':res[c]==='present'?'kp':'ka');btn.dataset.state=res[c];}}}
 function toast(msg,dur){dur=dur||1200;var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},dur);}
-function showResults(won,guesses,stats){if(!stats)stats=GameStats.getStats(GAME_ID);document.getElementById('rOut').textContent=won?'🎉 Brilliant!':'😔 Better luck next time';document.getElementById('rOut').className='r-out '+(won?'win':'lose');document.getElementById('rWord').textContent='The word was: '+state.answer;document.getElementById('rP').textContent=stats.played;document.getElementById('rW').textContent=GameStats.getWinRate(stats)+'%';document.getElementById('rS').textContent=stats.currentStreak;document.getElementById('rMS').textContent=stats.maxStreak;var ag=GameStats.getAvgGuesses(stats);document.getElementById('rAG').textContent=ag||'—';renderDist(stats.distribution,won?guesses:null);countdown();document.getElementById('shareBtn').onclick=function(){shareResult(won,guesses);};document.getElementById('resultsModal').classList.add('open');}
-function renderDist(dist,hl){var wrap=document.getElementById('rDist'),max=1,i;for(i=1;i<=6;i++)if((dist[i]||0)>max)max=dist[i];var html='<div class="dt">Guess Distribution</div>';for(i=1;i<=6;i++){var cnt=dist[i]||0,pct=Math.round(cnt/max*100),cur=(hl===i);html+='<div class="dr"><span class="dl">'+i+'</span><div class="dbw"><div class="db'+(cur?' cur':'')+'" style="width:'+Math.max(pct,8)+'%"><span>'+cnt+'</span></div></div></div>';}wrap.innerHTML=html;}
+function showResults(won,guesses,stats){if(!stats)stats=GameStats.getStats(GAME_ID);document.getElementById('rOut').textContent=won?(_T&&_T['wordle.result.win'])||'🎉 Brilliant!':(_T&&_T['wordle.result.lose'])||'😔 Better luck next time';document.getElementById('rOut').className='r-out '+(won?'win':'lose');document.getElementById('rWord').textContent=((_T&&_T['wordle.thewordwas'])||'The word was: ')+state.answer;document.getElementById('rP').textContent=stats.played;document.getElementById('rW').textContent=GameStats.getWinRate(stats)+'%';document.getElementById('rS').textContent=stats.currentStreak;document.getElementById('rMS').textContent=stats.maxStreak;var ag=GameStats.getAvgGuesses(stats);document.getElementById('rAG').textContent=ag||'—';renderDist(stats.distribution,won?guesses:null);countdown();document.getElementById('shareBtn').onclick=function(){shareResult(won,guesses);};document.getElementById('resultsModal').classList.add('open');}
+function renderDist(dist,hl){var wrap=document.getElementById('rDist'),max=1,i;for(i=1;i<=6;i++)if((dist[i]||0)>max)max=dist[i];var html='<div class="dt">'+( (_T&&_T['wordle.guessdist'])||'Guess Distribution')+'</div>';for(i=1;i<=6;i++){var cnt=dist[i]||0,pct=Math.round(cnt/max*100),cur=(hl===i);html+='<div class="dr"><span class="dl">'+i+'</span><div class="dbw"><div class="db'+(cur?' cur':'')+'" style="width:'+Math.max(pct,8)+'%"><span>'+cnt+'</span></div></div></div>';}wrap.innerHTML=html;}
 function countdown(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('nwt');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);}
-function shareResult(won,guesses){var rows=state.guesses.map(function(g){return evaluate(g,state.answer).map(function(r){return r==='correct'?'🟩':r==='present'?'🟨':'⬛';}).join('');});var txt=['${BRAND} Wordle — '+new Date().toLocaleDateString(),won?guesses+'/6':'X/6'].concat(rows).join(String.fromCharCode(10));navigator.clipboard.writeText(txt).then(function(){toast('Copied!',1500);}).catch(function(){toast('Could not copy',1200);});}
+function shareResult(won,guesses){var rows=state.guesses.map(function(g){return evaluate(g,state.answer).map(function(r){return r==='correct'?'🟩':r==='present'?'🟨':'⬛';}).join('');});var txt=['${BRAND} Wordle — '+new Date().toLocaleDateString(),won?guesses+'/6':'X/6'].concat(rows).join(String.fromCharCode(10));navigator.clipboard.writeText(txt).then(function(){toast((_T&&_T['common.copied'])||'Copied!',1500);}).catch(function(){toast((_T&&_T['common.cannotcopy'])||'Could not copy',1200);});}
 var TODAY_KEY='bn_w_'+_lang+'_'+new Date().toISOString().split('T')[0];
 function saveDay(){if(DEV_MODE)return;localStorage.setItem(TODAY_KEY,JSON.stringify({answer:state.answer,guesses:state.guesses,cur:state.cur,over:state.over,won:state.won,row:state.row}));}
 function loadDay(){if(DEV_MODE)return null;try{var r=localStorage.getItem(TODAY_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
@@ -2113,9 +2163,9 @@ function checkChangedCount(){
     inp.classList.toggle('changed-input',c&&c!==prev[i]);
   });
   var hint=document.getElementById('pathHint');
-  if(changed===0)hint.textContent='Change exactly one letter';
-  else if(changed===1)hint.textContent='✓ One letter changed';
-  else hint.textContent='⚠ Too many changes ('+changed+')';
+  if(changed===0)hint.textContent=(_T&&_T['pathle.onechange'])||'Change exactly one letter';
+  else if(changed===1)hint.textContent=(_T&&_T['pathle.oneletter'])||'✓ One letter changed';
+  else hint.textContent=((_T&&_T['pathle.toomany'])||'⚠ Too many changes')+' ('+changed+')';
 }
 
 function submitWord(){
@@ -2155,9 +2205,9 @@ function submitWord(){
 }
 
 function showPathResult(won,steps,stats){
-  document.getElementById('pOut').textContent=won?'🎉 Path found!':'😔 Path not found';
+  document.getElementById('pOut').textContent=won?(_T&&_T['pathle.result.win'])||'🎉 Path found!':(_T&&_T['pathle.result.lose'])||'😔 Path not found';
   document.getElementById('pOut').className='p-out '+(won?'win':'lose');
-  document.getElementById('pDesc').textContent=won?'Solved in '+steps+' step'+(steps!==1?'s':''):'The path was: '+gameState.puzzle.from+'→…→'+gameState.puzzle.to;
+  var _step=(_T&&_T['pathle.steptext'])||' step';document.getElementById('pDesc').textContent=won?((_T&&_T['pathle.solvedin'])||'Solved in')+' '+steps+_step+(steps!==1&&_step===' step'?'s':''):((_T&&_T['pathle.thepathread'])||'The path was: ')+gameState.puzzle.from+'→…→'+gameState.puzzle.to;
   if(!stats)stats=GameStats.getStats('pathle');
   document.getElementById('prPlayed').textContent=stats.played;
   document.getElementById('prWin').textContent=GameStats.getWinRate(stats)+'%';
@@ -2177,7 +2227,7 @@ function initPathle(){
   gameState={puzzle:puzzle,path:[puzzle.from],over:false,won:false,LEN:LEN,wordSet:LEN===5?PW_SET:PW4_SET,wordSetNorm:LEN===5?NORM_PW_SET:{}};
   document.getElementById('pFrom').textContent=puzzle.from.toUpperCase();
   document.getElementById('pTo').textContent=puzzle.to.toUpperCase();
-  document.getElementById('pathSteps').textContent='Par: '+puzzle.par+' step'+(puzzle.par!==1?'s':'');
+  var _ps=(_T&&_T['pathle.steptext'])||' step';document.getElementById('pathSteps').textContent=((_T&&_T['pathle.partext'])||'Par: ')+puzzle.par+_ps+(puzzle.par!==1&&_ps===' step'?'s':'');
   updateStreak();
   renderChain();
   buildInputRow();
@@ -2335,8 +2385,8 @@ ${AD_TOP}${NAV('fastspell')}
     <!-- Found words -->
     <div class="fs-found">
       <div class="fs-found-header">
-        <span class="fs-found-title">Words Found</span>
-        <span class="fs-found-count" id="fsPtsBreak">0 found</span>
+        <span class="fs-found-title" data-i18n="fs.wordsfound">Words Found</span>
+        <span class="fs-found-count" id="fsPtsBreak">0</span>
       </div>
       <div class="fs-words" id="fsWords"></div>
     </div>
@@ -2345,20 +2395,20 @@ ${AD_TOP}${NAV('fastspell')}
 ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
 <div class="modal-overlay" id="fsResultModal">
   <div class="modal">
-    <h2>Time's Up! ⏱</h2>
+    <h2 data-i18n="fs.timesup">Time's Up! ⏱</h2>
     <div class="fs-result-score" id="fsFinalScore">0</div>
-    <div class="fs-result-sub">points scored</div>
+    <div class="fs-result-sub" data-i18n="fs.ptscored">points scored</div>
     <div style="display:flex;justify-content:center;gap:0;margin:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:14px 0">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;border-right:1px solid var(--border)"><span style="font-family:var(--fm);font-size:20px;font-weight:500" id="fsStatPlayed">0</span><span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)">Played</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;border-right:1px solid var(--border)"><span style="font-family:var(--fm);font-size:20px;font-weight:500" id="fsStatBest">0</span><span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)">Best Score</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;border-right:1px solid var(--border)"><span style="font-family:var(--fm);font-size:20px;font-weight:500" id="fsStatPlayed">0</span><span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)" data-i18n="fs.played">Played</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;border-right:1px solid var(--border)"><span style="font-family:var(--fm);font-size:20px;font-weight:500" id="fsStatBest">0</span><span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)" data-i18n="fs.bestscore">Best Score</span></div>
 
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><span style="font-family:var(--fm);font-size:20px;font-weight:500" id="fsStatWords">0</span><span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)">Words Found</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><span style="font-family:var(--fm);font-size:20px;font-weight:500" id="fsStatWords">0</span><span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)" data-i18n="fs.wordsfound">Words Found</span></div>
     </div>
     <div class="fs-result-words" id="fsResultWords"></div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:4px">
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 0 4px"><span style="font-family:var(--fm);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)">Next FastSpell</span><span style="font-family:var(--fm);font-size:16px;color:var(--fg);letter-spacing:.04em" id="fsCountdown">--:--:--</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 0 4px"><span style="font-family:var(--fm);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)" data-i18n="fs.next">Next FastSpell</span><span style="font-family:var(--fm);font-size:16px;color:var(--fg);letter-spacing:.04em" id="fsCountdown">--:--:--</span></div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <button class="btn-amber" id="fsShareBtn">Share Result</button>
+        <button class="btn-amber" id="fsShareBtn" data-i18n="fs.share">Share Result</button>
         <a href="/rankings" class="btn-secondary" style="text-decoration:none">Rankings</a>
       </div>
     </div>
@@ -2424,7 +2474,7 @@ function renderFoundWords(){var div=document.getElementById('fsWords');div.inner
 function shuffleLetters(){var arr=fsState.letters.slice();for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}fsState.letters=arr;buildHex();}
 function buildHex(){var ring=document.getElementById('hexRing');ring.innerHTML='';var positions=[{angle:0},{angle:60},{angle:120},{angle:180},{angle:240},{angle:300}];var R=88,cx=130,cy=130;positions.forEach(function(pos,idx){var rad=pos.angle*Math.PI/180;var x=cx+R*Math.cos(rad)-34,y=cy+R*Math.sin(rad)-34;var btn=document.createElement('button');btn.className='hex-btn hex-outer';btn.textContent=fsState.letters[idx].toUpperCase();btn.style.left=x+'px';btn.style.top=y+'px';(function(letter){btn.onclick=function(){addLetter(letter);};})(fsState.letters[idx]);ring.appendChild(btn);});var cb=document.createElement('button');cb.className='hex-btn hex-center';cb.textContent=fsState.center.toUpperCase();cb.style.left=(cx-34)+'px';cb.style.top=(cy-34)+'px';cb.onclick=function(){addLetter(fsState.center);};ring.appendChild(cb);}
 function startTimer(){fsState.timeLeft=60;var fill=document.getElementById('fsTimerFill');var timeNum=document.getElementById('fsTimeNum');function tick(){fsState.timeLeft--;var pct=Math.max(0,fsState.timeLeft/60*100);fill.style.width=pct+'%';timeNum.textContent=fsState.timeLeft;if(fsState.timeLeft<=10){fill.classList.add('urgent');timeNum.classList.add('urgent');}if(fsState.timeLeft<=0){clearInterval(fsState.timerInterval);endGame();}}fsState.timerInterval=setInterval(tick,1000);}
-function endGame(){fsState.started=false;saveFSDay(fsState.score,Object.keys(fsState.found),fsState.pangram);var fsStats=GameStats.recordResult('fastspell',fsState.score>0,fsState.score);if(!fsStats)fsStats=GameStats.getStats('fastspell');try{var fsRaw=JSON.parse(localStorage.getItem('bn_stats_fastspell')||'{}');fsRaw.totalWords=(fsRaw.totalWords||0)+Object.keys(fsState.found).length;fsRaw.bestScore=Math.max(fsRaw.bestScore||0,fsState.score);fsRaw.pangrams=(fsRaw.pangrams||0)+(fsState.pangram?1:0);localStorage.setItem('bn_stats_fastspell',JSON.stringify(fsRaw));}catch(e){}fsStats=GameStats.getStats('fastspell');document.getElementById('fsFinalScore').textContent=fsState.score;var rw=document.getElementById('fsResultWords');rw.innerHTML='';var words=Object.keys(fsState.found).sort(function(a,b){return fsState.found[b]-fsState.found[a];});words.forEach(function(w){var span=document.createElement('span');span.className='fs-word-tag'+(isPangram(w)?' pangram':w.length>=6?' long':'');span.textContent=w+(isPangram(w)?' \u2B50':'');rw.appendChild(span);});document.getElementById('fsStatPlayed').textContent=fsStats.played||0;var best=0;try{var fsb=localStorage.getItem('bn_fs_best');best=fsb?Math.max(parseInt(fsb)||0,fsState.score):fsState.score;localStorage.setItem('bn_fs_best',best);}catch(e){best=fsState.score;}document.getElementById('fsStatBest').textContent=best;/* streak stat removed - no concept of streak in FastSpell */document.getElementById('fsStatWords').textContent=Object.keys(fsState.found).length;(function(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('fsCountdown');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);})();var fsShareBtn=document.getElementById('fsShareBtn');if(fsShareBtn)fsShareBtn.onclick=function(){var pg=fsState.pangram?' \uD83C\uDF1F':'';var txt='${BRAND} FastSpell'+String.fromCharCode(10)+fsState.score+' pts \u2022 '+Object.keys(fsState.found).length+' words'+pg;navigator.clipboard.writeText(txt).then(function(){fsShareBtn.textContent='Copied!';setTimeout(function(){fsShareBtn.textContent='Share Result';},1500);}).catch(function(){});};document.getElementById('fsResultModal').classList.add('open');}
+function endGame(){fsState.started=false;saveFSDay(fsState.score,Object.keys(fsState.found),fsState.pangram);var fsStats=GameStats.recordResult('fastspell',fsState.score>0,fsState.score);if(!fsStats)fsStats=GameStats.getStats('fastspell');try{var fsRaw=JSON.parse(localStorage.getItem('bn_stats_fastspell')||'{}');fsRaw.totalWords=(fsRaw.totalWords||0)+Object.keys(fsState.found).length;fsRaw.bestScore=Math.max(fsRaw.bestScore||0,fsState.score);fsRaw.pangrams=(fsRaw.pangrams||0)+(fsState.pangram?1:0);localStorage.setItem('bn_stats_fastspell',JSON.stringify(fsRaw));}catch(e){}fsStats=GameStats.getStats('fastspell');document.getElementById('fsFinalScore').textContent=fsState.score;var rw=document.getElementById('fsResultWords');rw.innerHTML='';var words=Object.keys(fsState.found).sort(function(a,b){return fsState.found[b]-fsState.found[a];});words.forEach(function(w){var span=document.createElement('span');span.className='fs-word-tag'+(isPangram(w)?' pangram':w.length>=6?' long':'');span.textContent=w+(isPangram(w)?' \u2B50':'');rw.appendChild(span);});document.getElementById('fsStatPlayed').textContent=fsStats.played||0;var best=0;try{var fsb=localStorage.getItem('bn_fs_best');best=fsb?Math.max(parseInt(fsb)||0,fsState.score):fsState.score;localStorage.setItem('bn_fs_best',best);}catch(e){best=fsState.score;}document.getElementById('fsStatBest').textContent=best;/* streak stat removed - no concept of streak in FastSpell */document.getElementById('fsStatWords').textContent=Object.keys(fsState.found).length;(function(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('fsCountdown');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);})();var fsShareBtn=document.getElementById('fsShareBtn');if(fsShareBtn)fsShareBtn.onclick=function(){var pg=fsState.pangram?' \uD83C\uDF1F':'';var txt='${BRAND} FastSpell'+String.fromCharCode(10)+fsState.score+' pts \u2022 '+Object.keys(fsState.found).length+' words'+pg;navigator.clipboard.writeText(txt).then(function(){fsShareBtn.textContent=(_T&&_T['fs.copied'])||'Copied!';setTimeout(function(){fsShareBtn.textContent=(_T&&_T['fs.share'])||'Share Result';},1500);}).catch(function(){});};document.getElementById('fsResultModal').classList.add('open');}
 
 function getFSKey(){var d=new Date();return 'bn_fs_'+d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();}
 function saveFSDay(score,words,pangram){try{localStorage.setItem(getFSKey(),JSON.stringify({score:score,words:words,pangram:pangram}));}catch(e){}}
@@ -2588,28 +2638,28 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
 <!-- Help Modal -->
 <div class="help-overlay" id="helpModal">
   <div class="help-box">
-    <div class="help-title">How to Play Blindle</div>
-    <p class="help-text">Guess the 5-letter word in <b>9 tries</b>.<br><br>After each guess, you see <b>3 counters</b> instead of coloured tiles:</p>
+    <div class="help-title" data-i18n="blindle.howtoplay">How to Play Blindle</div>
+    <p class="help-text" data-i18n="blindle.intro">Guess the 5-letter word in <b>9 tries</b>.<br><br>After each guess, you see <b>3 counters</b> instead of coloured tiles:</p>
     <div class="help-row">
       <div class="help-counter-demo">
         <div class="bl-counter correct" style="width:36px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:4px;border:1px solid #4a9e6e;background:rgba(74,158,110,.15)"><span style="font-family:var(--fm);font-size:16px;color:#4a9e6e">2</span><span style="width:8px;height:8px;border-radius:50%;background:#4a9e6e;display:block"></span></div>
       </div>
-      <div class="help-text"><b style="color:#4a9e6e">Green</b> = letters in the right position</div>
+      <div class="help-text" data-i18n="blindle.hint.green"><b style="color:#4a9e6e">Green</b> = letters in the right position</div>
     </div>
     <div class="help-row">
       <div class="help-counter-demo">
         <div class="bl-counter present" style="width:36px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:4px;border:1px solid #c49a28;background:rgba(196,154,40,.15)"><span style="font-family:var(--fm);font-size:16px;color:#c49a28">1</span><span style="width:8px;height:8px;border-radius:50%;background:#c49a28;display:block"></span></div>
       </div>
-      <div class="help-text"><b style="color:#c49a28">Yellow</b> = letters in the word but wrong position</div>
+      <div class="help-text" data-i18n="blindle.hint.yellow"><b style="color:#c49a28">Yellow</b> = letters in the word but wrong position</div>
     </div>
     <div class="help-row">
       <div class="help-counter-demo">
         <div class="bl-counter absent" style="width:36px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:4px;border:1px solid #e05c5c;background:rgba(224,92,92,.1)"><span style="font-family:var(--fm);font-size:16px;color:#e05c5c">2</span><span style="width:8px;height:8px;border-radius:50%;background:#e05c5c;display:block"></span></div>
       </div>
-      <div class="help-text"><b style="color:#e05c5c">Red</b> = letters not in the word at all</div>
+      <div class="help-text" data-i18n="blindle.hint.red"><b style="color:#e05c5c">Red</b> = letters not in the word at all</div>
     </div>
-    <p class="help-text" style="margin-top:12px">You must figure out <b>which letters</b> are correct, misplaced, or missing — with no position hints!</p>
-    <div style="text-align:center;margin-top:20px"><button class="btn-share" id="helpClose" style="background:var(--s2);border:1px solid var(--border);color:var(--fg);box-shadow:none">Got it!</button></div>
+    <p class="help-text" style="margin-top:12px" data-i18n="blindle.hint.explain">You must figure out <b>which letters</b> are correct, misplaced, or missing — with no position hints!</p>
+    <div style="text-align:center;margin-top:20px"><button class="btn-share" id="helpClose" style="background:var(--s2);border:1px solid var(--border);color:var(--fg);box-shadow:none" data-i18n="blindle.gotit">Got it!</button></div>
   </div>
 </div>
 <!-- Results Modal -->
@@ -2656,7 +2706,7 @@ function revealBLRow(ri,guess,res,cb){var counters=[0,0,0];res.forEach(function(
 function shakeBL(ri){var r=document.getElementById('blrow'+ri);r.classList.remove('shake');void r.offsetWidth;r.classList.add('shake');}
 function colorBLKeys(guess,res){/* Blindle: keyboard intentionally stays neutral */}
 function toastBL(msg,dur){dur=dur||1200;var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},dur);}
-function showBLResults(won,guesses,stats){if(!stats)stats=GameStats.getStats(BL_GAME_ID);document.getElementById('rOut').textContent=won?'\uD83C\uDF89 Brilliant!':'\uD83D\uDE14 Better luck next time';document.getElementById('rOut').className='r-out '+(won?'win':'lose');document.getElementById('rWord').textContent='The word was: '+blState.answer;document.getElementById('rP').textContent=stats.played;document.getElementById('rW').textContent=GameStats.getWinRate(stats)+'%';document.getElementById('rS').textContent=stats.currentStreak;document.getElementById('rMS').textContent=stats.maxStreak;countdownBL();document.getElementById('shareBtn').onclick=function(){shareBLResult(won,guesses);};document.getElementById('resultsModal').classList.add('open');}
+function showBLResults(won,guesses,stats){if(!stats)stats=GameStats.getStats(BL_GAME_ID);document.getElementById('rOut').textContent=won?(_T&&_T['blindle.result.win'])||'🎉 Brilliant!':(_T&&_T['blindle.result.lose'])||'😔 Better luck next time';document.getElementById('rOut').className='r-out '+(won?'win':'lose');document.getElementById('rWord').textContent=((_T&&_T['blindle.thewordwas'])||'The word was: ')+blState.answer;document.getElementById('rP').textContent=stats.played;document.getElementById('rW').textContent=GameStats.getWinRate(stats)+'%';document.getElementById('rS').textContent=stats.currentStreak;document.getElementById('rMS').textContent=stats.maxStreak;countdownBL();document.getElementById('shareBtn').onclick=function(){shareBLResult(won,guesses);};document.getElementById('resultsModal').classList.add('open');}
 function countdownBL(){function upd(){var now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);tom.setHours(0,0,0,0);var d=tom-now,h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);var el=document.getElementById('nwt');if(el)el.textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}upd();setInterval(upd,1000);}
 function shareBLResult(won,guesses){var rows=blState.guesses.map(function(g){var res=evaluateBL(g,blState.answer);var c=res.filter(function(r){return r==='correct';}).length,p=res.filter(function(r){return r==='present';}).length,a=res.filter(function(r){return r==='absent';}).length;return '\uD83D\uDFE9'+c+' \uD83D\uDFE8'+p+' \uD83D\uDFE5'+a;});var txt=['${BRAND} Blindle',won?guesses+'/9':'X/9'].concat(rows).join(String.fromCharCode(10));navigator.clipboard.writeText(txt).then(function(){toastBL('Copied!',1500);}).catch(function(){toastBL('Could not copy',1200);});}
 var BL_TODAY_KEY='bn_bl_'+_langBL+'_'+new Date().toISOString().split('T')[0];
