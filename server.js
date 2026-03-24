@@ -157,13 +157,13 @@ const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 
 const CSS = `<style>
 :root {
-  --black:#141414;--s1:#1c1c1c;--s2:#242424;--s3:#2e2e2e;
-  --border:#3a3a3a;--bordm:#4a4a4a;
+  --black:#0e2016;--s1:#132618;--s2:#182e1e;--s3:#1e3825;
+  --border:#2c5238;--bordm:#3a6848;
   --fg:#ffffff;--fg2:#ccc4ba;--fg3:#8a8078;
   --gold:#c9a84c;--goldl:#e4c068;--goldd:#6b5520;--goldg:rgba(201,168,76,.12);
   --green:#4a9e6e;--greenl:#5dbf84;--greend:#1a3d2a;
   --amber:#c49a28;
-  --correct:#4a9e6e;--present:#c49a28;--absent:#1e1e1e;--absentt:#4a4a4a;
+  --correct:#4a9e6e;--present:#c49a28;--absent:#101d13;--absentt:#3a6848;
   --fd:'Playfair Display',Georgia,serif;--fm:'DM Mono',monospace;--fb:'DM Sans',system-ui,sans-serif;
   --r:3px;--rm:5px;--rl:10px;
 }
@@ -178,7 +178,7 @@ a{color:var(--gold);text-decoration:none}a:hover{color:var(--goldl)}
 .ad-slot{width:100%;max-width:970px}
 .ad-placeholder{background:var(--s2);border:1px dashed var(--bordm);border-radius:var(--rm);height:90px;display:flex;align-items:center;justify-content:center;color:var(--fg3);font-family:var(--fm);font-size:11px}
 
-.navbar{background:rgba(20,20,20,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;gap:28px;position:sticky;top:0;z-index:200}
+.navbar{background:rgba(14,32,22,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;gap:28px;position:sticky;top:0;z-index:200}
 .navbar__logo{display:flex;align-items:center;gap:9px;flex-shrink:0;text-decoration:none!important}
 .logo-icon{font-size:18px;filter:drop-shadow(0 0 6px rgba(201,168,76,.5))}
 .logo-text{font-family:var(--fd);font-size:21px;font-weight:900;letter-spacing:-.025em;background:linear-gradient(130deg,var(--fg) 40%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -1238,7 +1238,7 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
     svg.appendChild(h);
     var hr=document.createElementNS(NS,'circle');
     hr.setAttribute('cx',CX);hr.setAttribute('cy',CY);hr.setAttribute('r',38);
-    hr.setAttribute('fill','none');hr.setAttribute('stroke','#242424');hr.setAttribute('stroke-width','1.5');
+    hr.setAttribute('fill','none');hr.setAttribute('stroke','#182e1e');hr.setAttribute('stroke-width','1.5');
     hr.style.pointerEvents='none';
     svg.appendChild(hr);
   }
@@ -1589,17 +1589,17 @@ function wordlePage() {
 @keyframes tFlip{0%{transform:rotateX(0)}49%{transform:rotateX(90deg);background:transparent;border-color:var(--bordm)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
 .tile.correct{background:var(--correct);border-color:var(--correct);color:#ffffff}
 .tile.present{background:var(--present);border-color:var(--present);color:#ffffff}
-.tile.absent{background:var(--absent);border-color:#555;color:#b0b0b0}
+.tile.absent{background:var(--absent);border-color:#2c5238;color:#b0b0b0}
 .tile.bounce{animation:tBounce .45s ease forwards}
 @keyframes tBounce{0%,100%{transform:translateY(0)}35%{transform:translateY(-14px)}65%{transform:translateY(-6px)}}
 .kb{display:flex;flex-direction:column;gap:7px;width:100%;max-width:500px}
 .kb-row{display:flex;justify-content:center;gap:6px}
 .key{height:var(--key-h,56px);min-width:38px;padding:0 5px;background:var(--s3);border:1px solid var(--border);border-radius:var(--r);color:var(--fg);font-family:var(--fm);font-size:13px;font-weight:500;cursor:pointer;text-transform:uppercase;user-select:none;flex:1;max-width:43px;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .08s}
 .key.wide{max-width:66px;font-size:11px}
-.key:hover{background:#2a2a2a}.key:active{transform:scale(.93)}
+.key:hover{background:#234530}.key:active{transform:scale(.93)}
 .key.kc{background:var(--correct)!important;border-color:var(--correct)!important;color:#fff!important}
 .key.kp{background:var(--present)!important;border-color:var(--present)!important;color:#0a0a0a!important}
-.key.ka{background:#161616!important;border-color:#1e1e1e!important;color:var(--absentt)!important}
+.key.ka{background:#101d13!important;border-color:#1a3020!important;color:var(--absentt)!important}
 .modal--r{max-width:480px;text-align:center}
 .r-out{font-family:var(--fd);font-size:32px;font-weight:900;margin-bottom:6px}
 .r-out.win{color:var(--greenl)}.r-out.lose{color:#d96060}
