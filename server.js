@@ -65,6 +65,11 @@ function getOrCreateUID(req, res) {
   return uid;
 }
 
+const FR_NAMES = { wordle:'Mot du Jour', pathle:'Mots Li\u00e9s', fastspell:'Mots contre La Montre', blindle:'Mot \u00e0 l\u2019aveugle' };
+const EN_NAMES = { wordle:'Wordle', pathle:'Pathle', fastspell:'FastSpell', blindle:'Blindle' };
+function gn(lang, game) { return (lang==='fr' ? FR_NAMES : EN_NAMES)[game] || game; }
+function getLang(req) { return parseCookies(req)['bn_lang'] === 'fr' ? 'fr' : 'en'; }
+
 function readJSON(req) {
   return new Promise(function(resolve, reject) {
     var body = '';
@@ -302,6 +307,7 @@ body.game-page .ad-banner--bottom{display:none}
 const I18N = `<script>
 (function(){
   var LANG = localStorage.getItem('bn_lang') || 'en';
+  document.cookie='bn_lang='+LANG+'; path=/; max-age=31536000; samesite=lax';
   var T = {
     en: {
       // Nav
@@ -849,6 +855,7 @@ const LANG_MODAL = `
   };
   window.setLang = function(l){
     localStorage.setItem('bn_lang',l);
+    document.cookie='bn_lang='+l+'; path=/; max-age=31536000; samesite=lax';
     closeLangModal();
     window.location.reload();
   };
@@ -1007,7 +1014,7 @@ function NAV(active, extra) {
 
 
 // ── HOME PAGE ──
-function homePage() {
+function homePage(lang) { lang=lang||'en';
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${BRAND} — Daily Brain Games</title>${FONTS}${CSS}
@@ -1093,22 +1100,22 @@ ${AD_TOP}${NAV('home')}
       <div class="pstat-title">Success Rate</div>
       <div id="skillRadar">
         <div class="pstat-row">
-          <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span><span data-i18n="wordle.title">Wordle</span></span>
+          <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span><span>${gn(lang,'wordle')}</span></span>
           <div class="pstat-bar-wrap"><div class="pstat-bar" id="pb-wordle" style="background:#e05c5c"></div></div>
           <span class="pstat-pct" id="pp-wordle">—</span>
         </div>
         <div class="pstat-row">
-          <span class="pstat-label"><span class="pstat-dot" style="background:#5b9cf6"></span><span data-i18n="pathle.title">Pathle</span></span>
+          <span class="pstat-label"><span class="pstat-dot" style="background:#5b9cf6"></span><span>${gn(lang,'pathle')}</span></span>
           <div class="pstat-bar-wrap"><div class="pstat-bar" id="pb-pathle" style="background:#5b9cf6"></div></div>
           <span class="pstat-pct" id="pp-pathle">—</span>
         </div>
         <div class="pstat-row">
-          <span class="pstat-label"><span class="pstat-dot" style="background:#f5a623"></span><span data-i18n="fs.title">FastSpell</span></span>
+          <span class="pstat-label"><span class="pstat-dot" style="background:#f5a623"></span><span>${gn(lang,'fastspell')}</span></span>
           <div class="pstat-bar-wrap"><div class="pstat-bar" id="pb-fastspell" style="background:#f5a623"></div></div>
           <span class="pstat-pct" id="pp-fastspell">—</span>
         </div>
         <div class="pstat-row">
-          <span class="pstat-label"><span class="pstat-dot" style="background:#a06bf5"></span><span data-i18n="blindle.title">Blindle</span></span>
+          <span class="pstat-label"><span class="pstat-dot" style="background:#a06bf5"></span><span>${gn(lang,'blindle')}</span></span>
           <div class="pstat-bar-wrap"><div class="pstat-bar" id="pb-blindle" style="background:#a06bf5"></div></div>
           <span class="pstat-pct" id="pp-blindle">—</span>
         </div>
@@ -1124,22 +1131,22 @@ ${AD_TOP}${NAV('home')}
         <div class="pstat-title" style="color:var(--gold)">Rank Percentile</div>
         <div id="rankRadar">
           <div class="pstat-row">
-            <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span>Wordle</span>
+            <span class="pstat-label"><span class="pstat-dot" style="background:#e05c5c"></span>${gn(lang,'wordle')}</span>
             <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-wordle" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
             <span class="pstat-pct" id="rp-wordle">—</span>
           </div>
           <div class="pstat-row">
-            <span class="pstat-label"><span class="pstat-dot" style="background:#5b9cf6"></span>Pathle</span>
+            <span class="pstat-label"><span class="pstat-dot" style="background:#5b9cf6"></span>${gn(lang,'pathle')}</span>
             <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-pathle" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
             <span class="pstat-pct" id="rp-pathle">—</span>
           </div>
           <div class="pstat-row">
-            <span class="pstat-label"><span class="pstat-dot" style="background:#f5a623"></span>FastSpell</span>
+            <span class="pstat-label"><span class="pstat-dot" style="background:#f5a623"></span>${gn(lang,'fastspell')}</span>
             <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-fastspell" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
             <span class="pstat-pct" id="rp-fastspell">—</span>
           </div>
           <div class="pstat-row">
-            <span class="pstat-label"><span class="pstat-dot" style="background:#a06bf5"></span>Blindle</span>
+            <span class="pstat-label"><span class="pstat-dot" style="background:#a06bf5"></span>${gn(lang,'blindle')}</span>
             <div class="pstat-bar-wrap"><div class="pstat-bar" id="rb-blindle" style="background:linear-gradient(90deg,var(--gold),var(--goldl))"></div></div>
             <span class="pstat-pct" id="rp-blindle">—</span>
           </div>
@@ -1164,28 +1171,28 @@ ${AD_TOP}${NAV('home')}
         <a href="/wordle" class="legend-item" data-idx="0" id="leg0">
           <div class="legend-dot" style="background:#e05c5c"></div>
           <div class="legend-info">
-            <div class="legend-name" style="color:#e05c5c">Wordle</div>
+            <div class="legend-name" style="color:#e05c5c">${gn(lang,'wordle')}</div>
             <div class="legend-desc" data-i18n="home.wordle.desc">Crack the 5-letter word in 6 tries.<br>Vocabulary &amp; deduction.</div>
           </div>
         </a>
         <a href="/pathle" class="legend-item" data-idx="1" id="leg1">
           <div class="legend-dot" style="background:#5b9cf6"></div>
           <div class="legend-info">
-            <div class="legend-name" style="color:#5b9cf6">Pathle</div>
+            <div class="legend-name" style="color:#5b9cf6">${gn(lang,'pathle')}</div>
             <div class="legend-desc" data-i18n="home.pathle.desc">Transform one word into another, one letter at a time.<br>Logic &amp; vocabulary.</div>
           </div>
         </a>
         <a href="/fastspell" class="legend-item" data-idx="2" id="leg2">
           <div class="legend-dot" style="background:#f5a623"></div>
           <div class="legend-info">
-            <div class="legend-name" style="color:#f5a623">FastSpell</div>
+            <div class="legend-name" style="color:#f5a623">${gn(lang,'fastspell')}</div>
             <div class="legend-desc" data-i18n="home.fs.desc">Build words from 7 letters. The centre letter is mandatory.<br>Word power &amp; speed.</div>
           </div>
         </a>
         <a href="/blindle" class="legend-item" data-idx="3" id="leg3">
           <div class="legend-dot" style="background:#a06bf5"></div>
           <div class="legend-info">
-            <div class="legend-name" style="color:#a06bf5">Blindle</div>
+            <div class="legend-name" style="color:#a06bf5">${gn(lang,'blindle')}</div>
             <div class="legend-desc" data-i18n="home.blindle.desc">Guess the word in 9 tries — but you only see counts.<br>Deduction without hints.</div>
           </div>
         </a>
@@ -1198,10 +1205,10 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
 (function() {
   var _t=window._T||{};
   var GAMES = [
-    { color:'#e05c5c', label:'Wordle',    icon:'🟩', desc:_t['game.wordle.desc']||'Vocabulary',   pct:0.25, id:'wordle' },
-    { color:'#5b9cf6', label:'Pathle',    icon:'🔗', desc:_t['game.pathle.desc']||'Logic',        pct:0.25, id:'pathle' },
-    { color:'#f5a623', label:'FastSpell', icon:'💡', desc:_t['game.fastspell.desc']||'Word Power', pct:0.25, id:'fastspell' },
-    { color:'#a06bf5', label:'Blindle',   icon:'🔮', desc:_t['game.blindle.desc']||'Blind Guess', pct:0.25, id:'blindle' }
+    { color:'#e05c5c', label:"${gn(lang,'wordle')}",    icon:'🟩', desc:_t['game.wordle.desc']||'Vocabulary',   pct:0.25, id:'wordle' },
+    { color:'#5b9cf6', label:"${gn(lang,'pathle')}",    icon:'🔗', desc:_t['game.pathle.desc']||'Logic',        pct:0.25, id:'pathle' },
+    { color:'#f5a623', label:"${gn(lang,'fastspell')}", icon:'💡', desc:_t['game.fastspell.desc']||'Word Power', pct:0.25, id:'fastspell' },
+    { color:'#a06bf5', label:"${gn(lang,'blindle')}",   icon:'🔮', desc:_t['game.blindle.desc']||'Blind Guess', pct:0.25, id:'blindle' }
   ];
   var NS='http://www.w3.org/2000/svg', svg=document.getElementById('pieSvg');
   var CX=100, CY=100, R=90, GAP_DEG=2.5, hovered=-1;
@@ -1288,7 +1295,7 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
   document.addEventListener('DOMContentLoaded', function(){
     var nm=Player.getName();
     if(nm){document.getElementById('profileName').textContent=nm;document.getElementById('profileAvatar').textContent=nm[0].toUpperCase();}
-    var games=[{id:'wordle',label:'Wordle'},{id:'pathle',label:'Pathle'},{id:'fastspell',label:'FastSpell'},{id:'blindle',label:'Blindle'}];
+    var games=[{id:'wordle',label:"${gn(lang,'wordle')}"},{id:'pathle',label:"${gn(lang,'pathle')}"},{id:'fastspell',label:"${gn(lang,'fastspell')}"},{id:'blindle',label:"${gn(lang,'blindle')}"}];
     var scores=[], hasAny=false;
     setTimeout(function(){
       games.forEach(function(g){
@@ -1359,7 +1366,7 @@ ${AD_BOT}${FOOTER}${LANG_MODAL}${FRIEND_MODAL}${PLAYER_MODAL}${I18N}${SHARED_JS}
 }
 
 // ── RANKINGS PAGE ──
-function rankingsPage() {
+function rankingsPage(lang) { lang=lang||'en';
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rankings — ${BRAND}</title>${FONTS}${CSS}
@@ -1405,10 +1412,10 @@ ${AD_TOP}${NAV('rankings')}
 <main class="rk-main">
   <div class="rk-header"><h1><span data-i18n="home.globalrankings">Global Rankings</span></h1><p>Sorted by win ratio, then average guesses on wins.</p></div>
   <div class="tabs">
-    <button class="tab active" data-game="wordle">🟩 Wordle</button>
-    <button class="tab" data-game="pathle">🔗 Pathle</button>
-    <button class="tab" data-game="fastspell">💡 FastSpell</button>
-    <button class="tab" data-game="blindle">🔮 Blindle</button>
+    <button class="tab active" data-game="wordle">🟩 ${gn(lang,'wordle')}</button>
+    <button class="tab" data-game="pathle">🔗 ${gn(lang,'pathle')}</button>
+    <button class="tab" data-game="fastspell">💡 ${gn(lang,'fastspell')}</button>
+    <button class="tab" data-game="blindle">🔮 ${gn(lang,'blindle')}</button>
   </div>
   <div class="table-wrap"><table>
     <thead id="thead"><tr><th>#</th><th><span data-i18n="rankings.player">Player</span></th><th><span data-i18n="rankings.played">Played</span></th><th id="th-metric">Win %</th><th id="th-sub">Avg Guesses</th><th><span data-i18n="wordle.maxstreak">Max Streak</span></th></tr></thead>
@@ -1567,10 +1574,10 @@ document.addEventListener('DOMContentLoaded', function(){ renderRankings('wordle
 }
 
 // ── WORDLE PAGE ──
-function wordlePage() {
+function wordlePage(lang) { lang=lang||'en';
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wordle — ${BRAND}</title>${FONTS}${CSS}
+<title>${gn(lang,'wordle')} — ${BRAND}</title>${FONTS}${CSS}
 <style>
 .gh{text-align:center;padding:24px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(201,168,76,.04),transparent)}
 .gt{font-family:var(--fd);font-size:34px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(135deg,var(--fg) 30%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -1637,7 +1644,7 @@ hr.hd{border:none;border-top:1px solid var(--border);margin:18px 0}
 </head><body class="game-page">
 ${AD_TOP}${NAV('wordle','<button class="navbar__help" id="helpBtn">?</button>')}
 <div class="gh">
-  <h1 class="gt">Wordle</h1>
+  <h1 class="gt">${gn(lang,'wordle')}</h1>
   <p class="gs"><span data-i18n="wordle.subtitle">Guess the 5-letter word in 6 tries</span></p>
   <div class="gm"><span id="gameDate"></span></div>
 </div>
@@ -1745,10 +1752,10 @@ document.addEventListener('DOMContentLoaded',function(){initGame();});
 }
 
 // ── PATHLE PAGE ──
-function pathlePage() {
+function pathlePage(lang) { lang=lang||'en';
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pathle — ${BRAND}</title>${FONTS}${CSS}
+<title>${gn(lang,'pathle')} — ${BRAND}</title>${FONTS}${CSS}
 <style>
 .gh{text-align:center;padding:20px 16px 14px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(91,156,246,.05),transparent)}
 .gt{font-family:var(--fd);font-size:34px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(135deg,var(--fg) 30%,#5b9cf6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -1791,7 +1798,7 @@ function pathlePage() {
 </head><body class="game-page">
 ${AD_TOP}${NAV('pathle')}
 <div class="gh">
-  <h1 class="gt">Pathle</h1>
+  <h1 class="gt">${gn(lang,'pathle')}</h1>
   <p class="gs"><span data-i18n="pathle.subtitle">Transform the word — one letter at a time</span></p>
 </div>
 <main class="game-main">
@@ -2277,10 +2284,10 @@ document.addEventListener('DOMContentLoaded',initPathle);
 
 // ── FASTSPELL PAGE ──
 // ── FASTSPELL PAGE ──
-function fastspellPage() {
+function fastspellPage(lang) { lang=lang||'en';
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FastSpell — ${BRAND}</title>${FONTS}${CSS}
+<title>${gn(lang,'fastspell')} — ${BRAND}</title>${FONTS}${CSS}
 <style>
 .gh{text-align:center;padding:20px 16px 14px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(245,166,35,.05),transparent)}
 .gt{font-family:var(--fd);font-size:34px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(135deg,var(--fg) 30%,#f5a623 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -2342,7 +2349,7 @@ function fastspellPage() {
 </head><body class="game-page">
 ${AD_TOP}${NAV('fastspell')}
 <div class="gh">
-  <h1 class="gt">FastSpell</h1>
+  <h1 class="gt">${gn(lang,'fastspell')}</h1>
   <p class="gs"><span data-i18n="fs.subtitle">Race the clock — spell as many words as you can</span></p>
 </div>
 <main class="game-main">
@@ -2529,10 +2536,10 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 // ── BLINDLE PAGE ──
-function blindlePage() {
+function blindlePage(lang) { lang=lang||'en';
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blindle — ${BRAND}</title>${FONTS}${CSS}
+<title>${gn(lang,'blindle')} — ${BRAND}</title>${FONTS}${CSS}
 <style>
 .gh{text-align:center;padding:24px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(160,107,245,.05),transparent)}
 .gt{font-family:var(--fd);font-size:34px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(135deg,var(--fg) 30%,#a06bf5 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -2612,7 +2619,7 @@ function blindlePage() {
 </head><body class="game-page">
 ${AD_TOP}${NAV('blindle','<button class="navbar__help" id="helpBtn">?</button>')}
 <div class="gh">
-  <h1 class="gt">Blindle</h1>
+  <h1 class="gt">${gn(lang,'blindle')}</h1>
   <p class="gs">Guess the word — but you only see the counts</p>
   <p class="gm" id="gameDate"></p>
 </div>
@@ -3028,13 +3035,14 @@ const server = http.createServer(async function(req, res) {
 
   // ── PAGE ROUTES ──────────────────────────────────────────────────────────
   getOrCreateUID(req, res);  // ensure cookie is set on all page loads
+  var lang = getLang(req);
   var html;
-  if      (url==='/'||url==='/index.html') html=homePage();
-  else if (url==='/rankings')              html=rankingsPage();
-  else if (url==='/wordle')                html=wordlePage();
-  else if (url==='/pathle')                html=pathlePage();
-  else if (url==='/fastspell')             html=fastspellPage();
-  else if (url==='/blindle')               html=blindlePage();
+  if      (url==='/'||url==='/index.html') html=homePage(lang);
+  else if (url==='/rankings')              html=rankingsPage(lang);
+  else if (url==='/wordle')                html=wordlePage(lang);
+  else if (url==='/pathle')                html=pathlePage(lang);
+  else if (url==='/fastspell')             html=fastspellPage(lang);
+  else if (url==='/blindle')               html=blindlePage(lang);
   else if (url==='/badges')               html=badgesPage();
   else if (url==='/reset')                html=resetPage();
   else if (url==='/setup') {
