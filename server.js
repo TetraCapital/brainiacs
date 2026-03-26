@@ -664,6 +664,12 @@ const GameStats = (function() {
     getAvgGuesses: function(s) { return (!s||s.wins===0) ? null : (s.totalGuessesOnWin/s.wins).toFixed(2); },
     getSortedRankings: function(g) {
       return getRankings(g).sort(function(a,b){
+        if (g === 'wordle') {
+          var sa=a.currentStreak||0, sb=b.currentStreak||0;
+          if (sb!==sa) return sb-sa;
+          var wa=a.played>0?a.wins/a.played:0, wb=b.played>0?b.wins/b.played:0;
+          return wb-wa;
+        }
         var wa=a.played>0?a.wins/a.played:0, wb=b.played>0?b.wins/b.played:0;
         if (wb!==wa) return wb-wa;
         var ga=a.wins>0?a.totalGuessesOnWin/a.wins:99, gb=b.wins>0?b.totalGuessesOnWin/b.wins:99;
@@ -2963,10 +2969,12 @@ const server = http.createServer(async function(req, res) {
         var fsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, CURRENT_DATE - p.created_at::date))::numeric, 1)";
         var orderBy = game === 'fastspell'
           ? fsFormula + ' DESC, gr.played DESC'
-          : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
+          : game === 'wordle'
+            ? 'gr.current_streak DESC, (CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, gr.played DESC'
+            : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
         var result = await db.query(
           `SELECT gr.player_id AS "playerId", p.name, gr.played, gr.wins,
-                  gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak",
+                  gr.current_streak AS "currentStreak", gr.total_guesses_on_win AS "totalGuessesOnWin", gr.max_streak AS "maxStreak",
                   ${fsFormula} AS "avgPtsPerDay"
            FROM game_results gr
            JOIN players p ON p.id = gr.player_id
@@ -2988,7 +2996,9 @@ const server = http.createServer(async function(req, res) {
           var gFsFormula = "ROUND((gr.total_guesses_on_win::float / GREATEST(1, CURRENT_DATE - p.created_at::date))::numeric, 1)";
           var gOrderBy = gname === 'fastspell'
             ? gFsFormula + ' DESC, gr.played DESC'
-            : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
+            : gname === 'wordle'
+              ? 'gr.current_streak DESC, (CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, gr.played DESC'
+              : '(CASE WHEN gr.played>0 THEN gr.wins::float/gr.played ELSE 0 END) DESC, (CASE WHEN gr.wins>0 THEN gr.total_guesses_on_win::float/gr.wins ELSE 99 END) ASC, gr.played DESC';
           var gResult = await db.query(
             `SELECT gr.player_id
              FROM game_results gr
