@@ -2391,9 +2391,9 @@ ${AD_TOP}${NAV('fastspell')}
     <div class="hex-ring" id="hexRing"></div>
     <!-- Controls -->
     <div class="fs-controls">
+      <button class="btn-secondary" id="fsShuffleBtn">Shuffle</button>
       <button class="btn-amber" id="fsEnterBtn">Enter</button>
       <button class="btn-secondary" id="fsDeleteBtn">Delete</button>
-      <button class="btn-secondary" id="fsShuffleBtn">Shuffle</button>
     </div>
     <!-- Found words -->
     <div class="fs-found">
